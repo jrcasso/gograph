@@ -15,18 +15,11 @@ const (
 	NullParent = ""
 )
 
-// MergeNode has many parent nodes and a single child node
-type MergeNode struct {
-	ParentIDs []string
-	Child     string
-	ID        string
-}
-
 // Node has a single parent node and a single child node
 type Node struct {
-	ParentID string
-	ChildID  string
-	ID       string
+	ParentIDs []string
+	ChildIDs  []string
+	ID        string
 }
 
 // Graph has many nodes
@@ -50,16 +43,23 @@ func CreateNode(parentID string, childID string) Node {
 	h.Write([]byte(s))
 	sha1Hash := h.Sum(nil)
 	return Node{
-		ParentID: parentID,
-		ChildID:  childID,
-		ID:       string(sha1Hash),
+		ParentIDs: append([]string{}, parentID),
+		ChildIDs:  append([]string{}, childID),
+		ID:        fmt.Sprintf("%x", sha1Hash),
 	}
 }
 
 // AddNode add a node to the specified graph. Does not create edges.
 func AddNode(graph Graph, node Node) Graph {
 	graph.Nodes = append(graph.Nodes, node)
+	// if node.ParentID != nil {
+	// 	parentNode = FindNode(graph, node.ParentID)
+	// }
 	return graph
+}
+
+func FindNode(graph Graph, node Node) {
+
 }
 
 // AddRootNode add a node to the specified graph. Does not create edges.
