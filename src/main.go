@@ -10,20 +10,21 @@ func main() {
 	var parentDirectedNode, node *gograph.DirectedNode
 
 	// graph = gograph.CreateGraph(nil)
-	var graph = gograph.DirectedGraph{
+	var linkedList = gograph.DirectedGraph{
 		DirectedNodes:    nil,
 		RootDirectedNode: nil,
 	}
-	graph, parentDirectedNode = gograph.CreateDirectedNode(graph, nil, nil)
+
+	linkedList, parentDirectedNode = gograph.CreateDirectedNode(linkedList, nil, nil)
 
 	for i := 0; i < 10; i++ {
-		graph, node = gograph.CreateDirectedNode(graph, []*gograph.DirectedNode{parentDirectedNode}, nil)
+		linkedList, node = gograph.CreateDirectedNode(linkedList, []*gograph.DirectedNode{parentDirectedNode}, nil)
 		parentDirectedNode = node
 	}
 
-	graph, _ = gograph.CreateDirectedNode(graph, []*gograph.DirectedNode{graph.DirectedNodes[0]}, nil)
+	linkedList, _ = gograph.CreateDirectedNode(linkedList, []*gograph.DirectedNode{linkedList.DirectedNodes[0]}, nil)
 
-	for _, node := range graph.DirectedNodes {
+	for _, node := range linkedList.DirectedNodes {
 		if len(node.Children) > 0 && len(node.Parents) == 0 {
 			fmt.Printf("The child of node %s is %+v\n", node.ID, node.Children[0].ID)
 		}
@@ -35,10 +36,15 @@ func main() {
 		}
 	}
 
-	var matrix = gograph.CreateAdjecencyMatrix(graph)
+	var adjMatrix = gograph.CreateAdjecencyMatrix(linkedList)
+	fmt.Println("Adjacency Matrix:")
+	for _, arr := range adjMatrix {
+		fmt.Printf("%+v\n", arr)
+	}
 
-	fmt.Println("Matrix:")
-	for _, parent := range matrix {
-		fmt.Printf("%+v\n", parent)
+	var incMatrix = gograph.CreateIncidenceMatrix(linkedList)
+	fmt.Println("Incidence Matrix:")
+	for _, arr := range incMatrix {
+		fmt.Printf("%+v\n", arr)
 	}
 }
