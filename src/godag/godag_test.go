@@ -6,74 +6,68 @@ import (
 
 // TestCreateGraph tests godag operations
 func TestCreateGraph(t *testing.T) {
-	go describe("CreateGraph", t)
-	graph := CreateGraph()
+	describe("CreateGraph", t)
+	var graph = CreateGraph()
 
-	it("creates a single root node.", t)
-	expectEqualInts(1, len(graph.Nodes), t)
+	it("creates a nil root node.", t)
+	if graph.RootNode != nil {
+		t.Errorf("Failed: expected %s, but found %+v", "nil", graph.RootNode)
+		return
+	}
 
-	it("creates a single root node with an ID of length 40.", t)
-	rootNodeID := graph.RootNode.ID
-	expectEqualInts(40, len(rootNodeID), t)
+	it("doesn't contain any nodes.", t)
+	if len(graph.Nodes) != 0 {
+		t.Errorf("Failed: expected %d, but found %+v", 0, len(graph.Nodes))
+		return
+	}
 
-	it("creates a single root node without a parent.", t)
-	rootNode := graph.Nodes[0]
-	// There should only be one empty string (the null parent)
-	expectEqualInts(1, len(rootNode.ParentIDs), t)
-	expectEqualStrings("", rootNode.ParentIDs[0], t)
 }
 
 // TestCreateNode tests godag operations
 func TestCreateNode(t *testing.T) {
-	go describe("CreateNode", t)
+	describe("CreateNode", t)
+	var graph = CreateGraph()
+	var newRootNode, newNode *Node
+
+	context("child and parent aren't specified", t)
+	graph, newRootNode = CreateNode(graph, []*Node{}, []*Node{})
 
 	it("creates an edgeless node", t)
-	when("child and parent aren't specified", t)
-	newNode := CreateNode("", "")
-	expectEqualInts(1, len(newNode.ParentIDs), t)
-	expectEqualInts(1, len(newNode.ChildIDs), t)
+	expectEqualInts(0, len(newRootNode.Parents), t)
+	expectEqualInts(0, len(newRootNode.Children), t)
 
-	it("creates a node with only a parent edge", t)
-	when("parent is specified and child is not", t)
-	newNode = CreateNode("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMN", "")
-	expectEqualInts(1, len(newNode.ParentIDs), t)
-	expectEqualInts(40, len(newNode.ParentIDs[0]), t)
+	it("assigns root node to the created node", t)
+	expectEqualInts(1, len(graph.Nodes), t)
+	expectEqualStrings(graph.RootNode.ID, newRootNode.ID, t)
 
-	it("creates a node with only a child edge", t)
-	when("child is specified and parent is not", t)
-	newNode = CreateNode("", "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMN")
-	expectEqualInts(1, len(newNode.ChildIDs), t)
-	expectEqualInts(40, len(newNode.ChildIDs[0]), t)
+	context("parent nodes are specified", t)
+	graph, newNode = CreateNode(graph, []*Node{newRootNode}, []*Node{})
 
-	it("creates a node with both a child edge and a parent edge", t)
-	when("both the child and parent are specified", t)
-	newNode = CreateNode("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMN")
-	expectEqualInts(1, len(newNode.ChildIDs), t)
-	expectEqualInts(40, len(newNode.ChildIDs[0]), t)
-	expectEqualInts(1, len(newNode.ParentIDs), t)
-	expectEqualInts(40, len(newNode.ParentIDs[0]), t)
+	it("creates a new node with the same parents as specified", t)
+	expectEqualInts(1, len(newNode.Parents), t)
+	expectEqualStrings(newNode.Parents[0].ID, graph.RootNode.ID, t)
+
+	it("updates existing nodes' child values", t)
+	expectEqualInts(2, len(graph.Nodes), t)
+	expectEqualStrings(graph.RootNode.Children[0].ID, newNode.ID, t)
+
+	context("child nodes are specified", t)
+	graph, newNode = CreateNode(graph, []*Node{}, []*Node{newRootNode})
+
+	it("creates a new node with the same parents as specified", t)
+	expectEqualInts(1, len(newNode.Parents), t)
+	expectEqualStrings(newNode.Parents[0].ID, graph.RootNode.ID, t)
+
+	it("updates existing nodes' child values", t)
+	expectEqualInts(2, len(graph.Nodes), t)
+	expectEqualStrings(graph.RootNode.Children[0].ID, newNode.ID, t)
+
+	// it("assigns root node to the created node", t)
+	// expectEqualInts(1, len(graph.Nodes), t)
+	// expectEqualStrings(graph.RootNode.ID, node.ID, t)
+
+	// graph, node = CreateNode(graph, []*Node{}, []*Node{})
+	// expectEqualInts(0, len(node.Parents), t)
+	// expectEqualInts(0, len(node.Children), t)
+	// expectEqualInts(2, len(graph.Nodes), t)
 }
-
-// func TestAddNode(T *testing.T) {
-// 	go describe("AddNode", t)
-
-// 	var wg sync.WaitGroup
-// 	graph := CreateGraph()
-// 	sampleChan := make(chan sample)
-
-// 	for i, line := range 10 {
-// 		wg.Add(1)
-// 		newNode := CreateNode("", "")
-
-//     go AddNode(graph, newNode)
-// 	}
-
-// 	go func() {
-// 			wg.Wait()
-// 			close(sampleChan)
-// 	}()
-
-// 	for s := range sampleChan {
-// 		..
-// 	}
-// }

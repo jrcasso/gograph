@@ -26,6 +26,6 @@ func it(description string, t *testing.T) {
 	t.Logf(" - it %s", description)
 }
 
-func when(description string, t *testing.T) {
-	t.Logf("      when %s", description)
+func context(description string, t *testing.T) {
+	t.Logf(" - when %s", description)
 }
