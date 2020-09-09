@@ -7,31 +7,23 @@ import (
 )
 
 func main() {
-	var parentNode, node, newNode *gograph.Node
+	var parentDirectedNode, node *gograph.DirectedNode
 
 	// graph = gograph.CreateGraph(nil)
 	var graph = gograph.Graph{
-		Nodes:    nil,
-		RootNode: nil,
+		DirectedNodes:    nil,
+		RootDirectedNode: nil,
 	}
-	graph, parentNode = gograph.CreateNode(graph, nil, nil)
+	graph, parentDirectedNode = gograph.CreateDirectedNode(graph, nil, nil)
 
 	for i := 0; i < 10; i++ {
-		graph, node = gograph.CreateNode(graph, []*gograph.Node{parentNode}, nil)
-		parentNode = node
+		graph, node = gograph.CreateDirectedNode(graph, []*gograph.DirectedNode{parentDirectedNode}, nil)
+		parentDirectedNode = node
 	}
 
-	graph, newNode = gograph.CreateNode(graph, []*gograph.Node{graph.Nodes[0]}, nil)
-	if newNode == nil {
-		panic("wtf")
-	}
+	graph, _ = gograph.CreateDirectedNode(graph, []*gograph.DirectedNode{graph.DirectedNodes[0]}, nil)
 
-	// graph, newNode = gograph.CreateNode(graph, nil, []*gograph.Node{graph.Nodes[0]})
-	// if newNode == nil {
-	// 	panic("wtf")
-	// }
-
-	for _, node := range graph.Nodes {
+	for _, node := range graph.DirectedNodes {
 		if len(node.Children) > 0 && len(node.Parents) == 0 {
 			fmt.Printf("The child of node %s is %+v\n", node.ID, node.Children[0].ID)
 		}

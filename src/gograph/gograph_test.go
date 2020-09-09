@@ -10,64 +10,64 @@ func TestCreateGraph(t *testing.T) {
 	var graph = CreateGraph()
 
 	it("creates a nil root node.", t)
-	if graph.RootNode != nil {
-		t.Errorf("Failed: expected %s, but found %+v", "nil", graph.RootNode)
+	if graph.RootDirectedNode != nil {
+		t.Errorf("Failed: expected %s, but found %+v", "nil", graph.RootDirectedNode)
 		return
 	}
 
 	it("doesn't contain any nodes.", t)
-	if len(graph.Nodes) != 0 {
-		t.Errorf("Failed: expected %d, but found %+v", 0, len(graph.Nodes))
+	if len(graph.DirectedNodes) != 0 {
+		t.Errorf("Failed: expected %d, but found %+v", 0, len(graph.DirectedNodes))
 		return
 	}
 
 }
 
-// TestCreateNode tests gograph operations
-func TestCreateNode(t *testing.T) {
-	describe("CreateNode", t)
+// TestCreateDirectedNode tests gograph operations
+func TestCreateDirectedNode(t *testing.T) {
+	describe("CreateDirectedNode", t)
 	var graph = CreateGraph()
-	var newRootNode, newNode *Node
+	var newRootDirectedNode, newDirectedNode *DirectedNode
 
 	context("child and parent aren't specified", t)
-	graph, newRootNode = CreateNode(graph, []*Node{}, []*Node{})
+	graph, newRootDirectedNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
 
 	it("creates an edgeless node", t)
-	expectEqualInts(0, len(newRootNode.Parents), t)
-	expectEqualInts(0, len(newRootNode.Children), t)
+	expectEqualInts(0, len(newRootDirectedNode.Parents), t)
+	expectEqualInts(0, len(newRootDirectedNode.Children), t)
 
 	it("assigns root node to the created node", t)
-	expectEqualInts(1, len(graph.Nodes), t)
-	expectEqualStrings(graph.RootNode.ID, newRootNode.ID, t)
+	expectEqualInts(1, len(graph.DirectedNodes), t)
+	expectEqualStrings(graph.RootDirectedNode.ID, newRootDirectedNode.ID, t)
 
 	context("parent nodes are specified", t)
-	graph, newNode = CreateNode(graph, []*Node{newRootNode}, []*Node{})
+	graph, newDirectedNode = CreateDirectedNode(graph, []*DirectedNode{newRootDirectedNode}, []*DirectedNode{})
 
 	it("creates a new node with the same parents as specified", t)
-	expectEqualInts(1, len(newNode.Parents), t)
-	expectEqualStrings(newNode.Parents[0].ID, graph.RootNode.ID, t)
+	expectEqualInts(1, len(newDirectedNode.Parents), t)
+	expectEqualStrings(newDirectedNode.Parents[0].ID, graph.RootDirectedNode.ID, t)
 
 	it("updates existing nodes' child values", t)
-	expectEqualInts(2, len(graph.Nodes), t)
-	expectEqualStrings(graph.RootNode.Children[0].ID, newNode.ID, t)
+	expectEqualInts(2, len(graph.DirectedNodes), t)
+	expectEqualStrings(graph.RootDirectedNode.Children[0].ID, newDirectedNode.ID, t)
 
 	context("child nodes are specified", t)
-	graph, newNode = CreateNode(graph, []*Node{}, []*Node{newRootNode})
+	graph, newDirectedNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{newRootDirectedNode})
 
 	it("creates a new node with the same parents as specified", t)
-	expectEqualInts(1, len(newNode.Parents), t)
-	expectEqualStrings(newNode.Parents[0].ID, graph.RootNode.ID, t)
+	expectEqualInts(1, len(newDirectedNode.Parents), t)
+	expectEqualStrings(newDirectedNode.Parents[0].ID, graph.RootDirectedNode.ID, t)
 
 	it("updates existing nodes' child values", t)
-	expectEqualInts(2, len(graph.Nodes), t)
-	expectEqualStrings(graph.RootNode.Children[0].ID, newNode.ID, t)
+	expectEqualInts(2, len(graph.DirectedNodes), t)
+	expectEqualStrings(graph.RootDirectedNode.Children[0].ID, newDirectedNode.ID, t)
 
 	// it("assigns root node to the created node", t)
-	// expectEqualInts(1, len(graph.Nodes), t)
-	// expectEqualStrings(graph.RootNode.ID, node.ID, t)
+	// expectEqualInts(1, len(graph.DirectedNodes), t)
+	// expectEqualStrings(graph.RootDirectedNode.ID, node.ID, t)
 
-	// graph, node = CreateNode(graph, []*Node{}, []*Node{})
+	// graph, node = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
 	// expectEqualInts(0, len(node.Parents), t)
 	// expectEqualInts(0, len(node.Children), t)
-	// expectEqualInts(2, len(graph.Nodes), t)
+	// expectEqualInts(2, len(graph.DirectedNodes), t)
 }
