@@ -1,4 +1,4 @@
-package godag
+package gograph
 
 import (
 	"testing"

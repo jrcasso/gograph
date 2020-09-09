@@ -3,30 +3,30 @@ package main
 import (
 	"fmt"
 
-	"./godag"
+	"./gograph"
 )
 
 func main() {
-	var parentNode, node, newNode *godag.Node
+	var parentNode, node, newNode *gograph.Node
 
-	// graph = godag.CreateGraph(nil)
-	var graph = godag.Graph{
+	// graph = gograph.CreateGraph(nil)
+	var graph = gograph.Graph{
 		Nodes:    nil,
 		RootNode: nil,
 	}
-	graph, parentNode = godag.CreateNode(graph, nil, nil)
+	graph, parentNode = gograph.CreateNode(graph, nil, nil)
 
 	for i := 0; i < 10; i++ {
-		graph, node = godag.CreateNode(graph, []*godag.Node{parentNode}, nil)
+		graph, node = gograph.CreateNode(graph, []*gograph.Node{parentNode}, nil)
 		parentNode = node
 	}
 
-	graph, newNode = godag.CreateNode(graph, []*godag.Node{graph.Nodes[0]}, nil)
+	graph, newNode = gograph.CreateNode(graph, []*gograph.Node{graph.Nodes[0]}, nil)
 	if newNode == nil {
 		panic("wtf")
 	}
 
-	// graph, newNode = godag.CreateNode(graph, nil, []*godag.Node{graph.Nodes[0]})
+	// graph, newNode = gograph.CreateNode(graph, nil, []*gograph.Node{graph.Nodes[0]})
 	// if newNode == nil {
 	// 	panic("wtf")
 	// }

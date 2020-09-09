@@ -1,10 +1,10 @@
-package godag
+package gograph
 
 import (
 	"testing"
 )
 
-// TestCreateGraph tests godag operations
+// TestCreateGraph tests gograph operations
 func TestCreateGraph(t *testing.T) {
 	describe("CreateGraph", t)
 	var graph = CreateGraph()
@@ -23,7 +23,7 @@ func TestCreateGraph(t *testing.T) {
 
 }
 
-// TestCreateNode tests godag operations
+// TestCreateNode tests gograph operations
 func TestCreateNode(t *testing.T) {
 	describe("CreateNode", t)
 	var graph = CreateGraph()
