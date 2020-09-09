@@ -10,7 +10,7 @@ func main() {
 	var parentDirectedNode, node *gograph.DirectedNode
 
 	// graph = gograph.CreateGraph(nil)
-	var graph = gograph.Graph{
+	var graph = gograph.DirectedGraph{
 		DirectedNodes:    nil,
 		RootDirectedNode: nil,
 	}

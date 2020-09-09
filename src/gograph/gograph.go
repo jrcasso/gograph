@@ -9,11 +9,23 @@ import (
 
 // Graph has many nodes
 type Graph struct {
+	Nodes            []*Node
+	RootDirectedNode *Node
+}
+
+// Node is a generic recursive data structure that only has undirected edges.
+type Node struct {
+	Edges []*Node
+	ID    string
+}
+
+// DirectedGraph has many nodes with directed edges
+type DirectedGraph struct {
 	DirectedNodes    []*DirectedNode
 	RootDirectedNode *DirectedNode
 }
 
-// DirectedNode has a single parent node and a single child node
+// DirectedNode has a single parent node edges and a single child node edges
 // TODO: Extend node to accept more than just Parents or Children. A programmer
 //       should be able to specify an arbitrary number of edge relationships thats
 //       can describe any abstract quality. Edges = [][]*DirectedNode, where the i-th edge
@@ -33,14 +45,14 @@ type DirectedNode struct {
 }
 
 // CreateGraph returns a null graph object with a single root node. Does not create edges.
-func CreateGraph() Graph {
+func CreateGraph() DirectedGraph {
 	var node *DirectedNode
 	var graphDirectedNodes []*DirectedNode
-	return Graph{DirectedNodes: graphDirectedNodes, RootDirectedNode: node}
+	return DirectedGraph{DirectedNodes: graphDirectedNodes, RootDirectedNode: node}
 }
 
 // CreateDirectedNode returns a node with a random ID. Does not create edges.
-func CreateDirectedNode(graph Graph, parents []*DirectedNode, children []*DirectedNode) (Graph, *DirectedNode) {
+func CreateDirectedNode(graph DirectedGraph, parents []*DirectedNode, children []*DirectedNode) (DirectedGraph, *DirectedNode) {
 	var nodeID = CreateDirectedNodeID()
 	var node = &DirectedNode{
 		Parents:  parents,
@@ -92,8 +104,18 @@ func CreateDirectedNodeID() string {
 	return fmt.Sprintf("%x", sha1Hash)
 }
 
+// FindNode traverses the array of nodes in the graph and returns the index of the node with the specified ID
+func FindNode(graph Graph, ID string) int {
+	for index, node := range graph.Nodes {
+		if node.ID == ID {
+			return index
+		}
+	}
+	return -1
+}
+
 // FindDirectedNode traverses the array of nodes in the graph and returns the index of the node with the specified ID
-func FindDirectedNode(graph Graph, ID string) int {
+func FindDirectedNode(graph DirectedGraph, ID string) int {
 	for index, node := range graph.DirectedNodes {
 		if node.ID == ID {
 			return index
