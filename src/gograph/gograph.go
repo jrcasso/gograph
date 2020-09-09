@@ -9,8 +9,7 @@ import (
 
 // Graph has many nodes
 type Graph struct {
-	Nodes            []*Node
-	RootDirectedNode *Node
+	Nodes []*Node
 }
 
 // Node is a generic recursive data structure that only has undirected edges.
@@ -122,4 +121,34 @@ func FindDirectedNode(graph DirectedGraph, ID string) int {
 		}
 	}
 	return -1
+}
+
+// CreateAdjecencyMatrix initial implementation, whether a directed edge exists from
+// j-th element to the i-th element. We define the parent to child direction as the
+// j-th to i-th direction.
+func CreateAdjecencyMatrix(graph DirectedGraph) [][]int {
+	var numNodes = len(graph.DirectedNodes)
+	var adjMatrix = make([][]int, numNodes)
+	for a := range graph.DirectedNodes {
+		adjMatrix[a] = make([]int, numNodes)
+	}
+
+	for i, inode := range graph.DirectedNodes {
+		for j, jnode := range graph.DirectedNodes {
+			for _, jNodeParent := range jnode.Parents {
+				if inode.ID == jNodeParent.ID {
+					adjMatrix[i][j] = 1
+				}
+			}
+		}
+	}
+
+	return adjMatrix
+}
+
+// PrintAdjacenyMatrix prints a matrix of integers
+func PrintAdjacenyMatrix(matrix [][]int) {
+	for _, parent := range matrix {
+		fmt.Printf("%+v\n", parent)
+	}
 }

@@ -34,4 +34,11 @@ func main() {
 			fmt.Printf("The parent of node %s is %+v\n", node.ID, node.Parents[0].ID)
 		}
 	}
+
+	var matrix = gograph.CreateAdjecencyMatrix(graph)
+
+	fmt.Println("Matrix:")
+	for _, parent := range matrix {
+		fmt.Printf("%+v\n", parent)
+	}
 }
