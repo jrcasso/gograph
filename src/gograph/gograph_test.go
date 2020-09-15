@@ -1,7 +1,9 @@
 package gograph
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 )
 
 // TestCreateGraph tests gograph operations
@@ -90,7 +92,7 @@ func TestCreateDirectedNode(t *testing.T) {
 
 func TestCreateDirectedNodeID(t *testing.T) {
 	describe("CreateDirectedNodeID", t)
-	it("can create unique IDs.", t)
+	it("can create unique IDs", t)
 
 	// It's something like 1 in 2^80 chance that a collision becomes a concern. 10000 will do fine.
 	var IDs = [10000]string{}
@@ -106,4 +108,28 @@ func TestCreateDirectedNodeID(t *testing.T) {
 			IDs[i] = newID
 		}
 	}
+}
+
+func TestFindDirectedNode(t *testing.T) {
+	describe("FindDirectedNode", t)
+	rand.Seed(time.Now().UnixNano())
+	var graph = CreateGraph()
+	var parentDirectedNode, node *DirectedNode
+	graph, parentDirectedNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+
+	var nodeCount = rand.Intn(1000)
+	var randIndex = rand.Intn(nodeCount)
+	var searchID = ""
+	for i := 0; i < nodeCount; i++ {
+		graph, node = CreateDirectedNode(graph, []*DirectedNode{parentDirectedNode}, []*DirectedNode{})
+		parentDirectedNode = node
+		if randIndex-1 == i {
+			searchID = node.ID
+		}
+	}
+
+	it("returns the correct index", t)
+	var index = FindDirectedNode(graph, searchID)
+	expectEqualInts(index, randIndex, t)
+	expectEqualStrings(graph.DirectedNodes[index].ID, searchID, t)
 }
