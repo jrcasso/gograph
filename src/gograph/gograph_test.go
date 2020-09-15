@@ -87,3 +87,23 @@ func TestCreateDirectedNode(t *testing.T) {
 	expectEqualStrings(graph.RootDirectedNode.Children[1].ID, newDirectedNode2.ID, t)
 	expectEqualStrings(newDirectedNode2.Children[0].ID, newDirectedNode3.ID, t)
 }
+
+func TestCreateDirectedNodeID(t *testing.T) {
+	describe("CreateDirectedNodeID", t)
+	it("can create unique IDs.", t)
+
+	// It's something like 1 in 2^80 chance that a collision becomes a concern. 10000 will do fine.
+	var IDs = [10000]string{}
+	var newID string
+	for i := 1; i < 10000; i++ {
+		newID = CreateDirectedNodeID()
+		for _, ID := range IDs {
+			if newID == ID {
+				t.Errorf("Failed: attempted to use redundant node ID %s", ID)
+				return
+
+			}
+			IDs[i] = newID
+		}
+	}
+}
