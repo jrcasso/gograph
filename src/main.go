@@ -38,13 +38,16 @@ func main() {
 
 	var adjMatrix = gograph.CreateAdjecencyMatrix(linkedList)
 	fmt.Println("Adjacency Matrix:")
-	for _, arr := range adjMatrix {
-		fmt.Printf("%+v\n", arr)
-	}
+	gograph.PrintMatrix(adjMatrix)
 
 	var incMatrix = gograph.CreateIncidenceMatrix(linkedList)
 	fmt.Println("Incidence Matrix:")
-	for _, arr := range incMatrix {
-		fmt.Printf("%+v\n", arr)
-	}
+	gograph.PrintMatrix(incMatrix)
+	// incMatrix[2] = []int{0, 0}  // Test for failure using this override
+
+	fmt.Println("The adjacency matrix is not necessarily asymmetric.")
+	fmt.Printf("%+v\n", gograph.IsAntisymmetricMatrix(adjMatrix))
+
+	fmt.Println("The incidence matrix is not necessarily asymmetric.")
+	fmt.Printf("%+v\n", gograph.IsAntisymmetricMatrix(incMatrix))
 }

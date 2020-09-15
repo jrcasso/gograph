@@ -23,7 +23,7 @@ func describe(functionName string, t *testing.T) {
 }
 
 func it(description string, t *testing.T) {
-	t.Logf(" - it %s", description)
+	t.Logf("    - it %s", description)
 }
 
 func context(description string, t *testing.T) {

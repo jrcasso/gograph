@@ -65,9 +65,6 @@ func CreateDirectedNode(graph DirectedGraph, parents []*DirectedNode, children [
 	if len(children) > 0 {
 		for _, child := range children {
 			var index = FindDirectedNode(graph, child.ID)
-			if index == 0 {
-				panic("Attempted to become a parent of the root node! Forbidden node creation.")
-			}
 			graph.DirectedNodes[index].Parents = append(child.Parents, node)
 		}
 	}
@@ -174,9 +171,26 @@ func CreateIncidenceMatrix(graph DirectedGraph) [][]int {
 	return adjMatrix
 }
 
-// PrintAdjacenyMatrix prints a matrix of integers
-func PrintAdjacenyMatrix(matrix [][]int) {
+// PrintMatrix prints a matrix of integers
+func PrintMatrix(matrix [][]int) {
 	for _, parent := range matrix {
 		fmt.Printf("%+v\n", parent)
 	}
+}
+
+// IsAntisymmetricMatrix checks that
+func IsAntisymmetricMatrix(matrix [][]int) bool {
+	var jsize = len(matrix)
+	for j := 0; j < jsize; j++ {
+		var isize = len(matrix[j])
+		for i := j; i < isize; i++ {
+			if len(matrix[i]) != len(matrix[j]) {
+				panic("Provided matrix is not a square matrix!")
+			}
+			if matrix[j][i] != -matrix[i][j] {
+				return false
+			}
+		}
+	}
+	return true
 }
