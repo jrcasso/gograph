@@ -65,6 +65,9 @@ func CreateDirectedNode(graph DirectedGraph, parents []*DirectedNode, children [
 	if len(children) > 0 {
 		for _, child := range children {
 			var index = FindDirectedNode(graph, child.ID)
+			if index == 0 {
+				panic("Attempted to become a parent of the root node! Forbidden node creation.")
+			}
 			graph.DirectedNodes[index].Parents = append(child.Parents, node)
 		}
 	}
