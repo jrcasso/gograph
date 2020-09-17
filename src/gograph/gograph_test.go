@@ -139,3 +139,29 @@ func TestFindDirectedNode(t *testing.T) {
 	it("returns the same node as specified by the index", t)
 	expectEqualStrings(foundNode.ID, graph.DirectedNodes[index].ID, t)
 }
+
+func TestCreateDirectedEdge(t *testing.T) {
+	describe("FindDirectedNode", t)
+	rand.Seed(time.Now().UnixNano())
+	var graph = CreateGraph()
+	var parentNode, childNode, cousinNode *DirectedNode
+	graph, parentNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+	graph, childNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+
+	graph, parentNode, childNode = CreateDirectedEdge(graph, parentNode, childNode)
+
+	it("should correctly assign a new child to the parent node, and a new parent node to the child", t)
+	expectEqualStrings(graph.DirectedNodes[0].ID, parentNode.ID, t)
+	expectEqualStrings(graph.DirectedNodes[1].ID, childNode.ID, t)
+	expectEqualStrings(graph.DirectedNodes[1].Parents[0].ID, parentNode.ID, t)
+	expectEqualStrings(graph.DirectedNodes[0].Children[0].ID, childNode.ID, t)
+
+	graph, cousinNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+	graph, _, cousinNode = CreateDirectedEdge(graph, parentNode, cousinNode)
+	graph, _, cousinNode = CreateDirectedEdge(graph, childNode, cousinNode)
+
+	it("should correctly create edges between arbitrary nodes", t)
+	expectEqualStrings(graph.DirectedNodes[2].ID, cousinNode.ID, t)
+	expectEqualStrings(graph.DirectedNodes[0].Children[1].ID, cousinNode.ID, t)
+	expectEqualStrings(graph.DirectedNodes[1].Children[0].ID, cousinNode.ID, t)
+}
