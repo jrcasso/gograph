@@ -129,8 +129,8 @@ func TestFindDirectedNode(t *testing.T) {
 	}
 
 	it("returns the correct index", t)
-	var foundNode DirectedNode
 	var index int
+	var foundNode DirectedNode
 
 	index, foundNode = FindDirectedNode(graph, searchID)
 	expectEqualInts(index, randIndex, t)
