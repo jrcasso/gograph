@@ -129,7 +129,13 @@ func TestFindDirectedNode(t *testing.T) {
 	}
 
 	it("returns the correct index", t)
-	var index = FindDirectedNode(graph, searchID)
+	var foundNode DirectedNode
+	var index int
+
+	index, foundNode = FindDirectedNode(graph, searchID)
 	expectEqualInts(index, randIndex, t)
 	expectEqualStrings(graph.DirectedNodes[index].ID, searchID, t)
+
+	it("returns the same node as specified by the index", t)
+	expectEqualStrings(foundNode.ID, graph.DirectedNodes[index].ID, t)
 }
