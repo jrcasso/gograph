@@ -64,7 +64,7 @@ func CreateDirectedNode(graph DirectedGraph, parents []*DirectedNode, children [
 	// Create edge between children nodes by updating their Parents reference to include this new node
 	if len(children) > 0 {
 		for _, child := range children {
-			var index = FindDirectedNode(graph, child.ID)
+			var index, _ = FindDirectedNode(graph, child.ID)
 			if index == 0 {
 				panic("Attempted to become a parent of the root node! Forbidden node creation.")
 			}
@@ -75,7 +75,7 @@ func CreateDirectedNode(graph DirectedGraph, parents []*DirectedNode, children [
 	// Create edge between parent nodes by updating their Children reference to include this new node
 	if len(parents) > 0 {
 		for _, parent := range parents {
-			var index = FindDirectedNode(graph, parent.ID)
+			var index, _ = FindDirectedNode(graph, parent.ID)
 			graph.DirectedNodes[index].Children = append(parent.Children, node)
 		}
 	}
@@ -114,13 +114,13 @@ func FindNode(graph Graph, ID string) int {
 }
 
 // FindDirectedNode traverses the array of nodes in the graph and returns the index of the node with the specified ID
-func FindDirectedNode(graph DirectedGraph, ID string) int {
+func FindDirectedNode(graph DirectedGraph, ID string) (int, DirectedNode) {
 	for index, node := range graph.DirectedNodes {
 		if node.ID == ID {
-			return index
+			return index, *node
 		}
 	}
-	return -1
+	return -1, DirectedNode{}
 }
 
 // CreateAdjecencyMatrix initial implementation, whether a directed edge exists from
