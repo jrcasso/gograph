@@ -3,13 +3,11 @@ package main
 import (
 	"fmt"
 
-	"./gograph"
+	"github.com/jrcasso/gograph"
 )
 
 func main() {
 	var parentDirectedNode, node *gograph.DirectedNode
-
-	// graph = gograph.CreateGraph(nil)
 	var linkedList = gograph.DirectedGraph{
 		DirectedNodes:    nil,
 		RootDirectedNode: nil,
@@ -43,7 +41,6 @@ func main() {
 	var incMatrix = gograph.CreateIncidenceMatrix(linkedList)
 	fmt.Println("Incidence Matrix:")
 	gograph.PrintMatrix(incMatrix)
-	// incMatrix[2] = []int{0, 0}  // Test for failure using this override
 
 	fmt.Println("The adjacency matrix is not necessarily asymmetric.")
 	fmt.Printf("%+v\n", gograph.IsAntisymmetricMatrix(adjMatrix))

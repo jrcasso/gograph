@@ -22,7 +22,6 @@ func TestCreateGraph(t *testing.T) {
 		t.Errorf("Failed: expected %d, but found %+v", 0, len(graph.DirectedNodes))
 		return
 	}
-
 }
 
 // TestCreateDirectedNode tests gograph operations
