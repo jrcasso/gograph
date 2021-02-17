@@ -40,6 +40,7 @@ type DirectedGraph struct {
 type DirectedNode struct {
 	Parents  []*DirectedNode
 	Children []*DirectedNode
+	Values   map[string]string
 	ID       string
 }
 
@@ -65,11 +66,12 @@ func CreateDirectedEdge(graph DirectedGraph, parent *DirectedNode, child *Direct
 }
 
 // CreateDirectedNode returns a node with a random ID. Does not create edges.
-func CreateDirectedNode(graph DirectedGraph, parents []*DirectedNode, children []*DirectedNode) (DirectedGraph, *DirectedNode) {
+func CreateDirectedNode(graph DirectedGraph, values map[string]string, parents []*DirectedNode, children []*DirectedNode) (DirectedGraph, *DirectedNode) {
 	var nodeID = CreateDirectedNodeID()
 	var node = &DirectedNode{
 		Parents:  parents,
 		Children: children,
+		Values:   values,
 		ID:       nodeID,
 	}
 

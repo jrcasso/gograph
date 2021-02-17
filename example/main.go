@@ -13,14 +13,14 @@ func main() {
 		RootDirectedNode: nil,
 	}
 
-	linkedList, parentDirectedNode = gograph.CreateDirectedNode(linkedList, nil, nil)
+	linkedList, parentDirectedNode = gograph.CreateDirectedNode(linkedList, nil, nil, nil)
 
 	for i := 0; i < 10; i++ {
-		linkedList, node = gograph.CreateDirectedNode(linkedList, []*gograph.DirectedNode{parentDirectedNode}, nil)
+		linkedList, node = gograph.CreateDirectedNode(linkedList, nil, []*gograph.DirectedNode{parentDirectedNode}, nil)
 		parentDirectedNode = node
 	}
 
-	linkedList, _ = gograph.CreateDirectedNode(linkedList, []*gograph.DirectedNode{linkedList.DirectedNodes[0]}, nil)
+	linkedList, _ = gograph.CreateDirectedNode(linkedList, nil, []*gograph.DirectedNode{linkedList.DirectedNodes[0]}, nil)
 
 	for _, node := range linkedList.DirectedNodes {
 		if len(node.Children) > 0 && len(node.Parents) == 0 {

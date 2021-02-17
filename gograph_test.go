@@ -34,7 +34,7 @@ func TestCreateDirectedNode(t *testing.T) {
 	context("child and parent aren't specified", t)
 	// Update the empty graph to contain a single, root node:
 	//         *r
-	graph, newRootDirectedNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+	graph, newRootDirectedNode = CreateDirectedNode(graph, map[string]string{"foo": "bar", "baz": "biz"}, []*DirectedNode{}, []*DirectedNode{})
 
 	it("updates the graph node references", t)
 	expectEqualInts(1, len(graph.DirectedNodes), t)
@@ -42,6 +42,15 @@ func TestCreateDirectedNode(t *testing.T) {
 	it("creates an edgeless node", t)
 	expectEqualInts(0, len(newRootDirectedNode.Parents), t)
 	expectEqualInts(0, len(newRootDirectedNode.Children), t)
+
+	it("has accessible values", t)
+	expectEqualInts(len(graph.RootDirectedNode.Values), 2, t)
+	expectEqualStrings(graph.RootDirectedNode.Values["foo"], "bar", t)
+	expectEqualStrings(graph.RootDirectedNode.Values["baz"], "biz", t)
+
+	it("has mutable values", t)
+	graph.RootDirectedNode.Values["foo"] = "test"
+	expectEqualStrings(graph.RootDirectedNode.Values["foo"], "test", t)
 
 	it("assigns root node to the created node", t)
 	expectEqualStrings(graph.RootDirectedNode.ID, newRootDirectedNode.ID, t)
@@ -51,7 +60,7 @@ func TestCreateDirectedNode(t *testing.T) {
 	//         *r
 	//        /
 	//       *1
-	graph, newDirectedNode1 = CreateDirectedNode(graph, []*DirectedNode{newRootDirectedNode}, []*DirectedNode{})
+	graph, newDirectedNode1 = CreateDirectedNode(graph, nil, []*DirectedNode{newRootDirectedNode}, []*DirectedNode{})
 
 	it("updates the graph node references", t)
 	expectEqualInts(2, len(graph.DirectedNodes), t)
@@ -73,8 +82,8 @@ func TestCreateDirectedNode(t *testing.T) {
 	//       *1         ---->     *1  *2
 	//                                 \
 	//             *3                   *3
-	graph, newDirectedNode3 = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
-	graph, newDirectedNode2 = CreateDirectedNode(graph, []*DirectedNode{newRootDirectedNode}, []*DirectedNode{newDirectedNode3})
+	graph, newDirectedNode3 = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, newDirectedNode2 = CreateDirectedNode(graph, nil, []*DirectedNode{newRootDirectedNode}, []*DirectedNode{newDirectedNode3})
 
 	it("updates the graph node references", t)
 	expectEqualInts(4, len(graph.DirectedNodes), t)
@@ -114,13 +123,13 @@ func TestFindDirectedNode(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	var graph = CreateGraph()
 	var parentDirectedNode, node *DirectedNode
-	graph, parentDirectedNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+	graph, parentDirectedNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
 
 	var nodeCount = rand.Intn(1000)
 	var randIndex = rand.Intn(nodeCount)
 	var searchID = ""
 	for i := 0; i < nodeCount; i++ {
-		graph, node = CreateDirectedNode(graph, []*DirectedNode{parentDirectedNode}, []*DirectedNode{})
+		graph, node = CreateDirectedNode(graph, nil, []*DirectedNode{parentDirectedNode}, []*DirectedNode{})
 		parentDirectedNode = node
 		if randIndex-1 == i {
 			searchID = node.ID
@@ -144,8 +153,8 @@ func TestCreateDirectedEdge(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	var graph = CreateGraph()
 	var parentNode, childNode, cousinNode *DirectedNode
-	graph, parentNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
-	graph, childNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+	graph, parentNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, childNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
 
 	graph, parentNode, childNode = CreateDirectedEdge(graph, parentNode, childNode)
 
@@ -155,7 +164,7 @@ func TestCreateDirectedEdge(t *testing.T) {
 	expectEqualStrings(graph.DirectedNodes[1].Parents[0].ID, parentNode.ID, t)
 	expectEqualStrings(graph.DirectedNodes[0].Children[0].ID, childNode.ID, t)
 
-	graph, cousinNode = CreateDirectedNode(graph, []*DirectedNode{}, []*DirectedNode{})
+	graph, cousinNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
 	graph, _, cousinNode = CreateDirectedEdge(graph, parentNode, cousinNode)
 	graph, _, cousinNode = CreateDirectedEdge(graph, childNode, cousinNode)
 
