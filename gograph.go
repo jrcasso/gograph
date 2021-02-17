@@ -55,13 +55,6 @@ func CreateGraph() DirectedGraph {
 func CreateDirectedEdge(graph DirectedGraph, parent *DirectedNode, child *DirectedNode) (DirectedGraph, *DirectedNode, *DirectedNode) {
 	child.Parents = append(child.Parents, parent)
 	parent.Children = append(parent.Children, child)
-
-	var childIndex, _ = FindDirectedNode(graph, child.ID)
-	var parentIndex, _ = FindDirectedNode(graph, parent.ID)
-
-	graph.DirectedNodes[childIndex] = child
-	graph.DirectedNodes[parentIndex] = parent
-
 	return graph, parent, child
 }
 
