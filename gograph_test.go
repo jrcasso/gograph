@@ -173,3 +173,19 @@ func TestCreateDirectedEdge(t *testing.T) {
 	expectEqualStrings(graph.DirectedNodes[0].Children[1].ID, cousinNode.ID, t)
 	expectEqualStrings(graph.DirectedNodes[1].Children[0].ID, cousinNode.ID, t)
 }
+
+func TestDeleteDirectedEdge(t *testing.T) {
+	describe("DeleteDirectedEdge", t)
+	rand.Seed(time.Now().UnixNano())
+	var graph = CreateGraph()
+	var parentNode, childNode *DirectedNode
+	graph, parentNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, childNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, parentNode, childNode = CreateDirectedEdge(graph, parentNode, childNode)
+
+	it("should delete the edge relationship between a parent and child node", t)
+	DeleteDirectedEdge(graph, parentNode, childNode)
+
+	expectEqualInts(0, len(parentNode.Children), t)
+	expectEqualInts(0, len(childNode.Parents), t)
+}

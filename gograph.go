@@ -112,6 +112,25 @@ func CreateDirectedNodeID() string {
 	return fmt.Sprintf("%x", sha1Hash)
 }
 
+// DeleteDirectedEdge is an in-place function that deletes the edge connection between a child and parent node
+// TODO: Something about the in-placeness, which is in contrast to the CreateDirectedEdge function.
+func DeleteDirectedEdge(graph DirectedGraph, parent *DirectedNode, child *DirectedNode) (DirectedGraph, *DirectedNode, *DirectedNode) {
+	for index, childNode := range parent.Children {
+		if childNode.ID == child.ID {
+			parent.Children = append(parent.Children[:index], parent.Children[index+1:]...)
+			break
+		}
+	}
+	for index, parentNode := range child.Parents {
+		if parentNode.ID == parent.ID {
+			child.Parents = append(child.Parents[:index], child.Parents[index+1:]...)
+			break
+		}
+	}
+
+	return graph, parent, child
+}
+
 // FindNode traverses the array of nodes in the graph and returns the index of the node with the specified ID
 func FindNode(graph Graph, ID string) int {
 	for index, node := range graph.Nodes {
@@ -130,6 +149,51 @@ func FindDirectedNode(graph DirectedGraph, ID string) (int, DirectedNode) {
 		}
 	}
 	return -1, DirectedNode{}
+}
+
+// FindNodesByValues traverses the array of nodes in the graph and returns the nodes that match the passed values
+func FindNodesByValues(graph DirectedGraph, values map[string]string) []*DirectedNode {
+	var isMatch bool
+	var results []*DirectedNode
+
+	for _, node := range graph.DirectedNodes {
+		isMatch = true
+		for key, value := range values {
+			if node.Values[key] != value {
+				isMatch = false
+			}
+		}
+		if isMatch {
+			results = append(results, node)
+		}
+	}
+	return results
+}
+
+// TopologicalSort implements Kahn's algorithm to sort a directed acyclic graph
+func TopologicalSort(graph DirectedGraph) []*DirectedNode {
+	var sorted []*DirectedNode
+	var childlessNodes []*DirectedNode
+	for _, node := range graph.DirectedNodes {
+		if len(node.Children) == 0 {
+			childlessNodes = append(childlessNodes, node)
+		}
+	}
+
+	for len(childlessNodes) > 0 {
+		var nextNode = childlessNodes[0]
+		childlessNodes = childlessNodes[1:]
+		sorted = append(sorted, nextNode)
+		for _, parent := range nextNode.Parents {
+			// Remove edge from parent to this node
+			DeleteDirectedEdge(graph, parent, nextNode)
+			if len(parent.Children) == 0 {
+				childlessNodes = append(childlessNodes, parent)
+			}
+		}
+	}
+
+	return sorted
 }
 
 // CreateAdjecencyMatrix initial implementation, whether a directed edge exists from
