@@ -18,4 +18,5 @@ steps:
 - name: "Coverage: gograph"
   image: golang
   commands:
+  - go test -covermode=count -coverprofile=count.out
   - go tool cover -func=count.out
