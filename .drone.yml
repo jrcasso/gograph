@@ -1,0 +1,10 @@
+---
+kind: pipeline
+type: docker
+name: Test
+
+steps:
+- name: "Unit test: gograph"
+  image: golang
+  commands:
+  - go test
