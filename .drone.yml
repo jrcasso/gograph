@@ -8,3 +8,14 @@ steps:
   image: golang
   commands:
   - go test
+
+---
+kind: pipeline
+type: docker
+name: Report
+
+steps:
+- name: "Coverage: gograph"
+  image: golang
+  commands:
+  - go tool cover -func=count.out
