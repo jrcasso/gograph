@@ -1,0 +1,22 @@
+---
+kind: pipeline
+type: docker
+name: Test
+
+steps:
+- name: "Unit test: gograph"
+  image: golang
+  commands:
+  - go test
+
+---
+kind: pipeline
+type: docker
+name: Report
+
+steps:
+- name: "Coverage: gograph"
+  image: golang
+  commands:
+  - go test -covermode=count -coverprofile=count.out
+  - go tool cover -func=count.out
