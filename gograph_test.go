@@ -255,3 +255,70 @@ func TestDeleteDirectedEdge(t *testing.T) {
 	expectEqualInts(0, len(parentNode.Children), t)
 	expectEqualInts(0, len(childNode.Parents), t)
 }
+
+// TestTopologicalSort tests that the function returns one possible topological ordering of the provided dag
+func TestTopologicalSort(t *testing.T) {
+	describe("TopologicalSort", t)
+	it("should correctly sort the graph", t)
+	var graph = CreateGraph()
+	var nodeA, nodeB, nodeC, nodeD, nodeE *DirectedNode
+	var sortedNodes []*DirectedNode
+
+	//    A
+	//   / \
+	//  B   |
+	//    \ |
+	//      C
+	//      |
+	//      D
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA, nodeB}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeC}, []*DirectedNode{})
+	sortedNodes = TopologicalSort(graph)
+	expectEqualStrings(sortedNodes[0].Values["name"], "nodeD", t)
+	expectEqualStrings(sortedNodes[1].Values["name"], "nodeC", t)
+	expectEqualStrings(sortedNodes[2].Values["name"], "nodeB", t)
+	expectEqualStrings(sortedNodes[3].Values["name"], "nodeA", t)
+
+	//    A
+	//   / \
+	//  B   C
+	//   \ /
+	//    D
+	graph = CreateGraph()
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+	sortedNodes = TopologicalSort(graph)
+	expectEqualStrings(sortedNodes[0].Values["name"], "nodeD", t)
+	expectEqualStrings(sortedNodes[1].Values["name"], "nodeB", t)
+	expectEqualStrings(sortedNodes[2].Values["name"], "nodeC", t)
+	expectEqualStrings(sortedNodes[3].Values["name"], "nodeA", t)
+	t.Logf("%+v:", sortedNodes)
+
+	//    A
+	//   / \
+	//  B   C
+	//   \ / \
+	//    D   E
+	//    |   |
+	//    F   G
+	graph = CreateGraph()
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeD = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+	graph, nodeE = CreateDirectedNode(graph, map[string]string{"name": "nodeE"}, []*DirectedNode{nodeC}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeF"}, []*DirectedNode{nodeD}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeG"}, []*DirectedNode{nodeE}, []*DirectedNode{})
+	sortedNodes = TopologicalSort(graph)
+	expectEqualStrings(sortedNodes[0].Values["name"], "nodeF", t)
+	expectEqualStrings(sortedNodes[1].Values["name"], "nodeG", t)
+	expectEqualStrings(sortedNodes[2].Values["name"], "nodeD", t)
+	expectEqualStrings(sortedNodes[3].Values["name"], "nodeE", t)
+	expectEqualStrings(sortedNodes[4].Values["name"], "nodeB", t)
+	expectEqualStrings(sortedNodes[5].Values["name"], "nodeC", t)
+	expectEqualStrings(sortedNodes[6].Values["name"], "nodeA", t)
+}
