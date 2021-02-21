@@ -2,6 +2,7 @@ package gograph
 
 import (
 	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -184,6 +185,33 @@ func TestFindDirectedNode(t *testing.T) {
 	var fakeNodeID = "not-a-true-id"
 	index, foundNode = FindDirectedNode(graph, fakeNodeID)
 	expectEqualInts(index, -1, t)
+}
+
+func TestFindNodesByValues(t *testing.T) {
+	describe("FindNodesByValues", t)
+
+	context("the desired node is in the graph", t)
+	rand.Seed(time.Now().UnixNano())
+	var graph = CreateGraph()
+	var parentDirectedNode, node, targetNode *DirectedNode
+	var foundNodes []*DirectedNode
+
+	graph, parentDirectedNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+
+	// Create a chain of 10,000 nodes
+	for i := 0; i < 10000; i++ {
+		s := strconv.Itoa(i)
+		graph, node = CreateDirectedNode(graph, map[string]string{"index": s}, []*DirectedNode{parentDirectedNode}, []*DirectedNode{})
+		parentDirectedNode = node
+		if i == 1337 {
+			targetNode = node
+		}
+	}
+
+	it("returns the correct node", t)
+	foundNodes = FindNodesByValues(graph, map[string]string{"index": "1337"})
+	expectEqualInts(len(foundNodes), 1, t)
+	expectEqualStrings(foundNodes[0].ID, targetNode.ID, t)
 }
 
 func TestCreateDirectedEdge(t *testing.T) {
