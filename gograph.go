@@ -193,6 +193,10 @@ func TopologicalSort(graph DirectedGraph) []*DirectedNode {
 		}
 	}
 
+	if len(sorted) != len(graph.DirectedNodes) {
+		panic("Provided graph is not a directed, acyclic graph, and does not have a valid topological ordering")
+	}
+
 	return sorted
 }
 
