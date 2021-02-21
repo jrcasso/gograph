@@ -150,6 +150,8 @@ func TestCreateDirectedNodeID(t *testing.T) {
 
 func TestFindDirectedNode(t *testing.T) {
 	describe("FindDirectedNode", t)
+
+	context("the desired node is in the graph", t)
 	rand.Seed(time.Now().UnixNano())
 	var graph = CreateGraph()
 	var parentDirectedNode, node *DirectedNode
@@ -176,6 +178,12 @@ func TestFindDirectedNode(t *testing.T) {
 
 	it("returns the same node as specified by the index", t)
 	expectEqualStrings(foundNode.ID, graph.DirectedNodes[index].ID, t)
+
+	context("the desired node is NOT in the graph", t)
+	it("returns an index of -1", t)
+	var fakeNodeID = "not-a-true-id"
+	index, foundNode = FindDirectedNode(graph, fakeNodeID)
+	expectEqualInts(index, -1, t)
 }
 
 func TestCreateDirectedEdge(t *testing.T) {
