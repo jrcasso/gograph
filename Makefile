@@ -3,3 +3,8 @@ run:
 
 build:
 	go build -o bin/main example/main.go
+
+cover:
+	go test -covermode=count -coverprofile=count.out
+	go tool cover -func=count.out
+	rm count.out
