@@ -98,6 +98,36 @@ func TestCreateDirectedNode(t *testing.T) {
 	expectEqualStrings(newDirectedNode2.Children[0].ID, newDirectedNode3.ID, t)
 }
 
+// TestFindNode ensures that FindNode will find a node with a passed ID, or return -1 otherwise
+func TestFindNode(t *testing.T) {
+	describe("FindNode", t)
+
+	context("the desired node is in the graph", t)
+	it("should find the correct node", t)
+	var graph = Graph{}
+	var newNode *Node
+	var nodeIndex int
+
+	// Create 10,000 nodes in the graph
+	for i := 0; i < 10000; i++ {
+		var nodeID = CreateDirectedNodeID()
+		newNode = &Node{Edges: nil, ID: nodeID}
+		graph.Nodes = append(graph.Nodes, newNode)
+	}
+
+	// Select a random one, the 1338th node, and do a lookup on its ID.
+	// Expect the function to return the index in the graph for the same node.
+	var nodeID = graph.Nodes[1337].ID
+	nodeIndex = FindNode(graph, nodeID)
+	expectEqualInts(nodeIndex, 1337, t)
+
+	context("the desired node is NOT in the graph", t)
+	it("returns an index of -1", t)
+	var fakeNodeID = "not-a-true-id"
+	nodeIndex = FindNode(graph, fakeNodeID)
+	expectEqualInts(nodeIndex, -1, t)
+}
+
 func TestCreateDirectedNodeID(t *testing.T) {
 	describe("CreateDirectedNodeID", t)
 	it("can create unique IDs", t)
