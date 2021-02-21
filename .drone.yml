@@ -7,7 +7,7 @@ steps:
 - name: "Unit test: gograph"
   image: golang
   commands:
-  - go test
+  - go test -v
 
 ---
 kind: pipeline

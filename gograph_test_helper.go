@@ -7,14 +7,12 @@ import (
 func expectEqualInts(value int, expectation int, t *testing.T) {
 	if value != expectation {
 		t.Errorf("Failed: expected %d, but found %d", value, expectation)
-		return
 	}
 }
 
 func expectEqualStrings(value string, expectation string, t *testing.T) {
 	if value != expectation {
 		t.Errorf("Failed: expected %s, but found %s", value, expectation)
-		return
 	}
 }
 
