@@ -185,12 +185,23 @@ func TopologicalSort(graph DirectedGraph) []*DirectedNode {
 		childlessNodes = childlessNodes[1:]
 		sorted = append(sorted, nextNode)
 		for _, parent := range nextNode.Parents {
-			// Remove edge from parent to this node
-			DeleteDirectedEdge(graph, parent, nextNode)
+			// Remove edge from parent to this child node
+			for index, childNode := range parent.Children {
+				if childNode.ID == nextNode.ID {
+					parent.Children = append(parent.Children[:index], parent.Children[index+1:]...)
+					break
+				}
+			}
 			if len(parent.Children) == 0 {
 				childlessNodes = append(childlessNodes, parent)
 			}
 		}
+		// Now that the edges have been deleted from the parents to this particular child node,
+		// we can more efficiently mass-delete the edges from the child to its parents.
+		// One might ask, "Why don't we call the DeleteDirectedEdge function?", to which I would respond,
+		// "The DeleteDirectedEdge function is an in-place function that will mutate the nextNode.Parents slice
+		// and lead to a 6-hour bug; the dummy variable would iterate through a mutated nextNode.Parents above.".
+		nextNode.Parents = []*DirectedNode{}
 	}
 
 	if len(sorted) != len(graph.DirectedNodes) {
