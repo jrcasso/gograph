@@ -17,7 +17,7 @@ RUN apt-get update \
 
 # Install Go tools
 ARG GO_TOOLS_WITH_MODULES="\
-    golang.org/x/tools/gopls \
+    golang.org/x/tools/gopls@latest \
     honnef.co/go/tools/... \
     golang.org/x/tools/cmd/gorename \
     golang.org/x/tools/cmd/goimports \
