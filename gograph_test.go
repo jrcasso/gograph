@@ -2,7 +2,6 @@ package gograph
 
 import (
 	"math/rand"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -35,7 +34,7 @@ func TestCreateDirectedNode(t *testing.T) {
 	context("child and parent aren't specified", t)
 	// Update the empty graph to contain a single, root node:
 	//         *r
-	graph, newRootDirectedNode = CreateDirectedNode(graph, map[string]string{"foo": "bar", "baz": "biz"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, newRootDirectedNode = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
 
 	it("updates the graph node references", t)
 	expectEqualInts(1, len(graph.DirectedNodes), t)
@@ -43,15 +42,6 @@ func TestCreateDirectedNode(t *testing.T) {
 	it("creates an edgeless node", t)
 	expectEqualInts(0, len(newRootDirectedNode.Parents), t)
 	expectEqualInts(0, len(newRootDirectedNode.Children), t)
-
-	it("has accessible values", t)
-	expectEqualInts(len(graph.RootDirectedNode.Values), 2, t)
-	expectEqualStrings(graph.RootDirectedNode.Values["foo"], "bar", t)
-	expectEqualStrings(graph.RootDirectedNode.Values["baz"], "biz", t)
-
-	it("has mutable values", t)
-	graph.RootDirectedNode.Values["foo"] = "test"
-	expectEqualStrings(graph.RootDirectedNode.Values["foo"], "test", t)
 
 	it("assigns root node to the created node", t)
 	expectEqualStrings(graph.RootDirectedNode.ID, newRootDirectedNode.ID, t)
@@ -61,7 +51,7 @@ func TestCreateDirectedNode(t *testing.T) {
 	//         *r
 	//        /
 	//       *1
-	graph, newDirectedNode1 = CreateDirectedNode(graph, nil, []*DirectedNode{newRootDirectedNode}, []*DirectedNode{})
+	graph, newDirectedNode1 = CreateDirectedNode(graph, "", []*DirectedNode{newRootDirectedNode}, []*DirectedNode{})
 
 	it("updates the graph node references", t)
 	expectEqualInts(2, len(graph.DirectedNodes), t)
@@ -83,8 +73,8 @@ func TestCreateDirectedNode(t *testing.T) {
 	//       *1         ---->     *1  *2
 	//                                 \
 	//             *3                   *3
-	graph, newDirectedNode3 = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
-	graph, newDirectedNode2 = CreateDirectedNode(graph, nil, []*DirectedNode{newRootDirectedNode}, []*DirectedNode{newDirectedNode3})
+	graph, newDirectedNode3 = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
+	graph, newDirectedNode2 = CreateDirectedNode(graph, "", []*DirectedNode{newRootDirectedNode}, []*DirectedNode{newDirectedNode3})
 
 	it("updates the graph node references", t)
 	expectEqualInts(4, len(graph.DirectedNodes), t)
@@ -156,13 +146,13 @@ func TestFindDirectedNode(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	var graph = CreateGraph()
 	var parentDirectedNode, node *DirectedNode
-	graph, parentDirectedNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, parentDirectedNode = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
 
 	var nodeCount = rand.Intn(1000)
 	var randIndex = rand.Intn(nodeCount)
 	var searchID = ""
 	for i := 0; i < nodeCount; i++ {
-		graph, node = CreateDirectedNode(graph, nil, []*DirectedNode{parentDirectedNode}, []*DirectedNode{})
+		graph, node = CreateDirectedNode(graph, "", []*DirectedNode{parentDirectedNode}, []*DirectedNode{})
 		parentDirectedNode = node
 		if randIndex-1 == i {
 			searchID = node.ID
@@ -187,40 +177,13 @@ func TestFindDirectedNode(t *testing.T) {
 	expectEqualInts(index, -1, t)
 }
 
-func TestFindNodesByValues(t *testing.T) {
-	describe("FindNodesByValues", t)
-
-	context("the desired node is in the graph", t)
-	rand.Seed(time.Now().UnixNano())
-	var graph = CreateGraph()
-	var parentDirectedNode, node, targetNode *DirectedNode
-	var foundNodes []*DirectedNode
-
-	graph, parentDirectedNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
-
-	// Create a chain of 10,000 nodes
-	for i := 0; i < 10000; i++ {
-		s := strconv.Itoa(i)
-		graph, node = CreateDirectedNode(graph, map[string]string{"index": s}, []*DirectedNode{parentDirectedNode}, []*DirectedNode{})
-		parentDirectedNode = node
-		if i == 1337 {
-			targetNode = node
-		}
-	}
-
-	it("returns the correct node", t)
-	foundNodes = FindNodesByValues(graph, map[string]string{"index": "1337"})
-	expectEqualInts(len(foundNodes), 1, t)
-	expectEqualStrings(foundNodes[0].ID, targetNode.ID, t)
-}
-
 func TestCreateDirectedEdge(t *testing.T) {
 	describe("FindDirectedNode", t)
 	rand.Seed(time.Now().UnixNano())
 	var graph = CreateGraph()
 	var parentNode, childNode, cousinNode *DirectedNode
-	graph, parentNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
-	graph, childNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, parentNode = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
+	graph, childNode = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
 
 	graph, parentNode, childNode = CreateDirectedEdge(graph, parentNode, childNode)
 
@@ -230,7 +193,7 @@ func TestCreateDirectedEdge(t *testing.T) {
 	expectEqualStrings(graph.DirectedNodes[1].Parents[0].ID, parentNode.ID, t)
 	expectEqualStrings(graph.DirectedNodes[0].Children[0].ID, childNode.ID, t)
 
-	graph, cousinNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, cousinNode = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
 	graph, _, cousinNode = CreateDirectedEdge(graph, parentNode, cousinNode)
 	graph, _, cousinNode = CreateDirectedEdge(graph, childNode, cousinNode)
 
@@ -245,8 +208,8 @@ func TestDeleteDirectedEdge(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	var graph = CreateGraph()
 	var parentNode, childNode *DirectedNode
-	graph, parentNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
-	graph, childNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
+	graph, parentNode = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
+	graph, childNode = CreateDirectedNode(graph, "", []*DirectedNode{}, []*DirectedNode{})
 	graph, parentNode, childNode = CreateDirectedEdge(graph, parentNode, childNode)
 
 	it("should delete the edge relationship between a parent and child node", t)
@@ -271,15 +234,15 @@ func TestTopologicalSort(t *testing.T) {
 	//      C
 	//      |
 	//      D
-	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
-	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
-	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA, nodeB}, []*DirectedNode{})
-	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeC}, []*DirectedNode{})
+	graph, nodeA = CreateDirectedNode(graph, "nodeA", []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, "nodeB", []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, "nodeC", []*DirectedNode{nodeA, nodeB}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, "nodeD", []*DirectedNode{nodeC}, []*DirectedNode{})
 	sortedNodes = TopologicalSort(graph)
-	expectEqualStrings(sortedNodes[0].Values["name"], "nodeD", t)
-	expectEqualStrings(sortedNodes[1].Values["name"], "nodeC", t)
-	expectEqualStrings(sortedNodes[2].Values["name"], "nodeB", t)
-	expectEqualStrings(sortedNodes[3].Values["name"], "nodeA", t)
+	expectEqualStrings(sortedNodes[0].ID, "nodeD", t)
+	expectEqualStrings(sortedNodes[1].ID, "nodeC", t)
+	expectEqualStrings(sortedNodes[2].ID, "nodeB", t)
+	expectEqualStrings(sortedNodes[3].ID, "nodeA", t)
 
 	//    A
 	//   / \
@@ -287,15 +250,15 @@ func TestTopologicalSort(t *testing.T) {
 	//   \ /
 	//    D
 	graph = CreateGraph()
-	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
-	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
-	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
-	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+	graph, nodeA = CreateDirectedNode(graph, "nodeA", []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, "nodeB", []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, "nodeC", []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, "nodeD", []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
 	sortedNodes = TopologicalSort(graph)
-	expectEqualStrings(sortedNodes[0].Values["name"], "nodeD", t)
-	expectEqualStrings(sortedNodes[1].Values["name"], "nodeB", t)
-	expectEqualStrings(sortedNodes[2].Values["name"], "nodeC", t)
-	expectEqualStrings(sortedNodes[3].Values["name"], "nodeA", t)
+	expectEqualStrings(sortedNodes[0].ID, "nodeD", t)
+	expectEqualStrings(sortedNodes[1].ID, "nodeB", t)
+	expectEqualStrings(sortedNodes[2].ID, "nodeC", t)
+	expectEqualStrings(sortedNodes[3].ID, "nodeA", t)
 	t.Logf("%+v:", sortedNodes)
 
 	//    A
@@ -306,19 +269,19 @@ func TestTopologicalSort(t *testing.T) {
 	//    |   |
 	//    F   G
 	graph = CreateGraph()
-	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
-	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
-	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
-	graph, nodeD = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
-	graph, nodeE = CreateDirectedNode(graph, map[string]string{"name": "nodeE"}, []*DirectedNode{nodeC}, []*DirectedNode{})
-	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeF"}, []*DirectedNode{nodeD}, []*DirectedNode{})
-	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeG"}, []*DirectedNode{nodeE}, []*DirectedNode{})
+	graph, nodeA = CreateDirectedNode(graph, "nodeA", []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, "nodeB", []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, "nodeC", []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeD = CreateDirectedNode(graph, "nodeD", []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+	graph, nodeE = CreateDirectedNode(graph, "nodeE", []*DirectedNode{nodeC}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, "nodeF", []*DirectedNode{nodeD}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, "nodeG", []*DirectedNode{nodeE}, []*DirectedNode{})
 	sortedNodes = TopologicalSort(graph)
-	expectEqualStrings(sortedNodes[0].Values["name"], "nodeF", t)
-	expectEqualStrings(sortedNodes[1].Values["name"], "nodeG", t)
-	expectEqualStrings(sortedNodes[2].Values["name"], "nodeD", t)
-	expectEqualStrings(sortedNodes[3].Values["name"], "nodeE", t)
-	expectEqualStrings(sortedNodes[4].Values["name"], "nodeB", t)
-	expectEqualStrings(sortedNodes[5].Values["name"], "nodeC", t)
-	expectEqualStrings(sortedNodes[6].Values["name"], "nodeA", t)
+	expectEqualStrings(sortedNodes[0].ID, "nodeF", t)
+	expectEqualStrings(sortedNodes[1].ID, "nodeG", t)
+	expectEqualStrings(sortedNodes[2].ID, "nodeD", t)
+	expectEqualStrings(sortedNodes[3].ID, "nodeE", t)
+	expectEqualStrings(sortedNodes[4].ID, "nodeB", t)
+	expectEqualStrings(sortedNodes[5].ID, "nodeC", t)
+	expectEqualStrings(sortedNodes[6].ID, "nodeA", t)
 }

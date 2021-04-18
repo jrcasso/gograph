@@ -40,7 +40,6 @@ type DirectedGraph struct {
 type DirectedNode struct {
 	Parents  []*DirectedNode
 	Children []*DirectedNode
-	Values   map[string]string
 	ID       string
 }
 
@@ -58,13 +57,14 @@ func CreateDirectedEdge(graph DirectedGraph, parent *DirectedNode, child *Direct
 	return graph, parent, child
 }
 
-// CreateDirectedNode returns a node with a random ID. Does not create edges.
-func CreateDirectedNode(graph DirectedGraph, values map[string]string, parents []*DirectedNode, children []*DirectedNode) (DirectedGraph, *DirectedNode) {
-	var nodeID = CreateDirectedNodeID()
+// CreateDirectedNode creates a node with a random ID if one is not specified. Does not create edges.
+func CreateDirectedNode(graph DirectedGraph, nodeID string, parents []*DirectedNode, children []*DirectedNode) (DirectedGraph, *DirectedNode) {
+	if nodeID == "" {
+		nodeID = CreateDirectedNodeID()
+	}
 	var node = &DirectedNode{
 		Parents:  parents,
 		Children: children,
-		Values:   values,
 		ID:       nodeID,
 	}
 
@@ -149,25 +149,6 @@ func FindDirectedNode(graph DirectedGraph, ID string) (int, DirectedNode) {
 		}
 	}
 	return -1, DirectedNode{}
-}
-
-// FindNodesByValues traverses the array of nodes in the graph and returns the nodes that match the passed values
-func FindNodesByValues(graph DirectedGraph, values map[string]string) []*DirectedNode {
-	var isMatch bool
-	var results []*DirectedNode
-
-	for _, node := range graph.DirectedNodes {
-		isMatch = true
-		for key, value := range values {
-			if node.Values[key] != value {
-				isMatch = false
-			}
-		}
-		if isMatch {
-			results = append(results, node)
-		}
-	}
-	return results
 }
 
 // TopologicalSort implements Kahn's algorithm to sort a directed acyclic graph
