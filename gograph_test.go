@@ -296,7 +296,6 @@ func TestTopologicalSort(t *testing.T) {
 	expectEqualStrings(sortedNodes[1].Values["name"], "nodeB", t)
 	expectEqualStrings(sortedNodes[2].Values["name"], "nodeC", t)
 	expectEqualStrings(sortedNodes[3].Values["name"], "nodeA", t)
-	t.Logf("%+v:", sortedNodes)
 
 	//    A
 	//   / \
@@ -321,4 +320,39 @@ func TestTopologicalSort(t *testing.T) {
 	expectEqualStrings(sortedNodes[4].Values["name"], "nodeB", t)
 	expectEqualStrings(sortedNodes[5].Values["name"], "nodeC", t)
 	expectEqualStrings(sortedNodes[6].Values["name"], "nodeA", t)
+}
+
+func TestCreateAdjecencyMatrix(t *testing.T) {
+	describe("CreateAdjecencyMatrix", t)
+	it("should correctly describe the edge relationships between nodes", t)
+	var graph = CreateGraph()
+	var adjecencyMatrix [][]int
+	var nodeA, nodeB, nodeC *DirectedNode
+	var expectedMatrix = [][]int{
+		{0, 1, 1, 0},
+		{0, 0, 0, 1},
+		{0, 0, 0, 1},
+		{0, 0, 0, 0},
+	}
+
+	//    A
+	//   / \
+	//  B   C
+	//   \ /
+	//    D
+	graph = CreateGraph()
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+	adjecencyMatrix = CreateAdjecencyMatrix(graph)
+
+	for i := range adjecencyMatrix {
+		for j := range adjecencyMatrix {
+			if adjecencyMatrix[i][j] != expectedMatrix[i][j] {
+				t.Errorf("Failed: expected %+v, but found %+v", expectedMatrix, adjecencyMatrix)
+				return
+			}
+		}
+	}
 }
