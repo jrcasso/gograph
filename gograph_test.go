@@ -325,9 +325,9 @@ func TestTopologicalSort(t *testing.T) {
 func TestCreateAdjecencyMatrix(t *testing.T) {
 	describe("CreateAdjecencyMatrix", t)
 	it("should correctly describe the edge relationships between nodes", t)
-	var graph = CreateGraph()
+	var graphA, graphB DirectedGraph
 	var adjecencyMatrix [][]int
-	var nodeA, nodeB, nodeC *DirectedNode
+	var nodeA, nodeB, nodeC, nodeD, nodeE *DirectedNode
 	var expectedMatrix = [][]int{
 		{0, 1, 1, 0},
 		{0, 0, 0, 1},
@@ -340,17 +340,80 @@ func TestCreateAdjecencyMatrix(t *testing.T) {
 	//  B   C
 	//   \ /
 	//    D
+	graphA = CreateGraph()
+	graphA = CreateGraph()
+	graphA, nodeA = CreateDirectedNode(graphA, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graphA, nodeB = CreateDirectedNode(graphA, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graphA, nodeC = CreateDirectedNode(graphA, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graphA, _ = CreateDirectedNode(graphA, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+
+	//    A
+	//   / \
+	//  B   C
+	//   \ / \
+	//    D   E
+	//    |   |
+	//    F   G
+	expectedMatrix = [][]int{
+		{0, 1, 1, 0, 0, 0, 0},
+		{0, 0, 0, 1, 0, 0, 0},
+		{0, 0, 0, 1, 1, 0, 0},
+		{0, 0, 0, 0, 0, 1, 0},
+		{0, 0, 0, 0, 0, 0, 1},
+		{0, 0, 0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0, 0, 0},
+	}
+	graphB = CreateGraph()
+	graphB, nodeA = CreateDirectedNode(graphB, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graphB, nodeB = CreateDirectedNode(graphB, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graphB, nodeC = CreateDirectedNode(graphB, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graphB, nodeD = CreateDirectedNode(graphB, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+	graphB, nodeE = CreateDirectedNode(graphB, map[string]string{"name": "nodeE"}, []*DirectedNode{nodeC}, []*DirectedNode{})
+	graphB, _ = CreateDirectedNode(graphB, map[string]string{"name": "nodeF"}, []*DirectedNode{nodeD}, []*DirectedNode{})
+	graphB, _ = CreateDirectedNode(graphB, map[string]string{"name": "nodeG"}, []*DirectedNode{nodeE}, []*DirectedNode{})
+
+	for _, graph := range []DirectedGraph{graphA, graphB} {
+		adjecencyMatrix = CreateAdjecencyMatrix(graph)
+		for i := range adjecencyMatrix {
+			for j := range adjecencyMatrix {
+				if adjecencyMatrix[i][j] != expectedMatrix[i][j] {
+					t.Errorf("Failed: expected %+v, but found %+v", expectedMatrix, adjecencyMatrix)
+					return
+				}
+			}
+		}
+	}
+}
+
+func TestCreateIncidenceMatrix(t *testing.T) {
+	describe("CreateIncidenceMatrix", t)
+	it("should correctly describe the edge relationships between nodes", t)
+	var graph = CreateGraph()
+	var incidenceMatrix [][]int
+	var nodeA, nodeB, nodeC *DirectedNode
+	var expectedMatrix = [][]int{
+		{0, 1, 1, 0},
+		{-1, 0, 0, 1},
+		{-1, 0, 0, 1},
+		{0, -1, -1, 0},
+	}
+
+	//    A
+	//   / \
+	//  B   C
+	//   \ /
+	//    D
 	graph = CreateGraph()
 	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
-	adjecencyMatrix = CreateAdjecencyMatrix(graph)
+	incidenceMatrix = CreateIncidenceMatrix(graph)
 
-	for i := range adjecencyMatrix {
-		for j := range adjecencyMatrix {
-			if adjecencyMatrix[i][j] != expectedMatrix[i][j] {
-				t.Errorf("Failed: expected %+v, but found %+v", expectedMatrix, adjecencyMatrix)
+	for i := range incidenceMatrix {
+		for j := range incidenceMatrix {
+			if incidenceMatrix[i][j] != expectedMatrix[i][j] {
+				t.Errorf("Failed: expected %+v, but found %+v", expectedMatrix, incidenceMatrix)
 				return
 			}
 		}
