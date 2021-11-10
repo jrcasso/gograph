@@ -7,8 +7,6 @@
 
 ## Summary
 
-While taking some time off work, I wanted to learn some Golang for purposes of professional growth. This is the first of several packages I took a solid swing at. Golang has become a very pervasive language in recent years, often found under the hood of a lot of paradigm-shifting tooling in the software industry. Software such as Docker, Kubernetes, Terraform, and several recent continuous integration systems (e.g. Drone) have used it to great effect. There is good evidence to suggest that learning Golang would be valuable for one's continuous improvement as an engineer.
-
 This project endeavors to implement the following:
  - a working toolbox of graph theory primitives in the form of structs and functions
  - a complete set of functional unit tests using Golang's native `go test` functionality
