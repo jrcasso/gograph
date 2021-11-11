@@ -15,7 +15,7 @@ type Graph struct {
 // Node is a generic recursive data structure that only has undirected edges.
 type Node struct {
 	Edges []*Node
-	ID    string
+	ID    interface{}
 }
 
 // DirectedGraph has many nodes with directed edges
@@ -42,6 +42,22 @@ type DirectedNode struct {
 	Children []*DirectedNode
 	Values   map[string]string
 	ID       string
+}
+
+// A generic edge can have any kind of value; an integer can be used to represent
+// arbitrary states. For example, a directed edge could conceivably use two mutually
+// exclusive values like 0 and 1 to represent arrow direction
+// Conventionally, an edge has two vertices, but allowing an arbitrary number gets
+// yields a hypergraph implementation, affording greater mathematical generality
+type Edge struct {
+	Value int
+	Nodes []*Node
+}
+
+// DirectedEdge 
+type DirectedEdge struct {
+	Value bool
+	Nodes []*Node
 }
 
 // CreateGraph returns a null graph object with a single root node. Does not create edges.
