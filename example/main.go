@@ -6,45 +6,51 @@ import (
 	"github.com/jrcasso/gograph"
 )
 
+type MyValue struct {
+	value map[string]string
+}
+
 func main() {
-	var parentDirectedNode, node *gograph.DirectedNode
-	var linkedList = gograph.DirectedGraph{
-		DirectedNodes:    nil,
-		RootDirectedNode: nil,
-	}
+	var graphA = gograph.Graph{}
+	nodeA := graphA.AddNode(
+		[]*gograph.Edge{},
+		MyValue{
+			value: map[string]string{"name": "A"},
+		},
+	)
+	nodeB := graphA.AddNode(
+		[]*gograph.Edge{},
+		MyValue{
+			value: map[string]string{"name": "B"},
+		},
+	)
+	graphA.AddEdge(
+		MyValue{
+			value: map[string]string{"value": "1"},
+		},
+		nodeA,
+		nodeB,
+	)
 
-	linkedList, parentDirectedNode = gograph.CreateDirectedNode(linkedList, nil, nil, nil)
+	fmt.Printf("%+v", graphA)
 
-	for i := 0; i < 10; i++ {
-		linkedList, node = gograph.CreateDirectedNode(linkedList, nil, []*gograph.DirectedNode{parentDirectedNode}, nil)
-		parentDirectedNode = node
-	}
+	var graphB = gograph.DirectedGraph{}
+	nodeA = graphB.AddNode(
+		nil,
+		nil,
+		[]*gograph.Node{},
+		[]*gograph.Node{},
+	)
+	nodeB = graphB.AddNode(
+		nil,
+		nil,
+		[]*gograph.Node{nodeA},
+		[]*gograph.Node{},
+	)
 
-	linkedList, _ = gograph.CreateDirectedNode(linkedList, nil, []*gograph.DirectedNode{linkedList.DirectedNodes[0]}, nil)
+	fmt.Printf("%+v", graphB)
+}
 
-	for _, node := range linkedList.DirectedNodes {
-		if len(node.Children) > 0 && len(node.Parents) == 0 {
-			fmt.Printf("The child of node %s is %+v\n", node.ID, node.Children[0].ID)
-		}
-		if len(node.Parents) > 0 && len(node.Children) > 0 {
-			fmt.Printf("The child of node %s is %+v and the parent is %+v\n", node.ID, node.Children[0].ID, node.Parents[0].ID)
-		}
-		if len(node.Parents) > 0 && len(node.Children) == 0 {
-			fmt.Printf("The parent of node %s is %+v\n", node.ID, node.Parents[0].ID)
-		}
-	}
-
-	var adjMatrix = gograph.CreateAdjecencyMatrix(linkedList)
-	fmt.Println("Adjacency Matrix:")
-	gograph.PrintMatrix(adjMatrix)
-
-	var incMatrix = gograph.CreateIncidenceMatrix(linkedList)
-	fmt.Println("Incidence Matrix:")
-	gograph.PrintMatrix(incMatrix)
-
-	fmt.Println("The adjacency matrix is not necessarily asymmetric.")
-	fmt.Printf("%+v\n", gograph.IsAntisymmetricMatrix(adjMatrix))
-
-	fmt.Println("The incidence matrix is not necessarily asymmetric.")
-	fmt.Printf("%+v\n", gograph.IsAntisymmetricMatrix(incMatrix))
+func (v MyValue) GetAsMap() map[string]string {
+	return v.value
 }
