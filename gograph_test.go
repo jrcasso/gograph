@@ -340,7 +340,7 @@ func TestCreateAdjecencyMatrix(t *testing.T) {
 	//  B   C
 	//   \ /
 	//    D
-	graphA = CreateGraph()
+
 	graphA = CreateGraph()
 	graphA, nodeA = CreateDirectedNode(graphA, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graphA, nodeB = CreateDirectedNode(graphA, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
