@@ -355,16 +355,26 @@ func CreateIncidenceMatrix(graph DirectedGraph) [][]int {
 	return adjMatrix
 }
 
-// IsAntisymmetricMatrix checks that a matrix is antisymmetric, meaning that for all i,j: matrix[i][j] = -matrix[j][i]
+// IsAntisymmetricMatrix checks if a matrix is antisymmetric
 func IsAntisymmetricMatrix(matrix [][]int) bool {
-	var jsize = len(matrix)
-	for j := 0; j < jsize; j++ {
-		var isize = len(matrix[j])
-		for i := j; i < isize; i++ {
-			if len(matrix[i]) != len(matrix[j]) {
-				panic("Provided matrix is not a square matrix!")
-			}
-			if matrix[j][i] != -matrix[i][j] {
+	if len(matrix) == 0 {
+		return false
+	}
+	
+	// Check if matrix is square
+	n := len(matrix)
+	for _, row := range matrix {
+		if len(row) != n {
+			return false
+		}
+	}
+
+	for i := 0; i < n; i++ {
+		if matrix[i][i] != 0 {
+			return false
+		}
+		for j := 0; j < n; j++ {
+			if matrix[i][j] != -matrix[j][i] {
 				return false
 			}
 		}

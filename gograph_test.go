@@ -807,3 +807,71 @@ func TestGenericGraph(t *testing.T) {
 	expectEqualInts(len(convDirNode3.Parents), 1, t)
 	expectEqualStrings(convDirNode3.Parents[0].Values["name"], "dirNode2", t)
 }
+
+// TestIsAntisymmetricMatrix tests the IsAntisymmetricMatrix function
+func TestIsAntisymmetricMatrix(t *testing.T) {
+	describe("IsAntisymmetricMatrix", t)
+
+	context("when matrix is antisymmetric", t)
+	it("should return true", t)
+	antisymmetricMatrix := [][]int{
+		{0, 1, -2},
+		{-1, 0, 3},
+		{2, -3, 0},
+	}
+	
+	result := IsAntisymmetricMatrix(antisymmetricMatrix)
+	if !result {
+		t.Errorf("Expected antisymmetric matrix to return true, got false")
+	}
+	
+	context("when matrix is not antisymmetric", t)
+	it("should return false for non-zero diagonal", t)
+
+	nonZeroDiagonal := [][]int{
+		{1, 1, -2},
+		{-1, 0, 3},
+		{2, -3, 0},
+	}
+	
+	result = IsAntisymmetricMatrix(nonZeroDiagonal)
+	if result {
+		t.Errorf("Expected matrix with non-zero diagonal to return false, got true")
+	}
+	
+	it("should return false for non-antisymmetric elements", t)
+
+	nonAntisymmetric := [][]int{
+		{0, 1, -2},
+		{-1, 0, 3},
+		{2, 4, 0},
+	}
+	
+	result = IsAntisymmetricMatrix(nonAntisymmetric)
+	if result {
+		t.Errorf("Expected non-antisymmetric matrix to return false, got true")
+	}
+	
+	context("when matrix is not square", t)
+	it("should return false", t)
+
+	nonSquare := [][]int{
+		{0, 1, -2},
+		{-1, 0, 3},
+	}
+	
+	result = IsAntisymmetricMatrix(nonSquare)
+	if result {
+		t.Errorf("Expected non-square matrix to return false, got true")
+	}
+	
+	context("when matrix is empty", t)
+	it("should handle empty matrix", t)
+
+	empty := [][]int{}
+	
+	result = IsAntisymmetricMatrix(empty)
+	if result {
+		t.Errorf("Expected empty matrix to return false, got true")
+	}
+}
