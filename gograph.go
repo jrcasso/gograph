@@ -360,7 +360,7 @@ func IsAntisymmetricMatrix(matrix [][]int) bool {
 	if len(matrix) == 0 {
 		return false
 	}
-	
+
 	// Check if matrix is square
 	n := len(matrix)
 	for _, row := range matrix {

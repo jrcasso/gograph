@@ -1,7 +1,10 @@
 package gograph
 
 import (
+	"bytes"
+	"io"
 	"math/rand"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -819,12 +822,12 @@ func TestIsAntisymmetricMatrix(t *testing.T) {
 		{-1, 0, 3},
 		{2, -3, 0},
 	}
-	
+
 	result := IsAntisymmetricMatrix(antisymmetricMatrix)
 	if !result {
 		t.Errorf("Expected antisymmetric matrix to return true, got false")
 	}
-	
+
 	context("when matrix is not antisymmetric", t)
 	it("should return false for non-zero diagonal", t)
 
@@ -833,12 +836,12 @@ func TestIsAntisymmetricMatrix(t *testing.T) {
 		{-1, 0, 3},
 		{2, -3, 0},
 	}
-	
+
 	result = IsAntisymmetricMatrix(nonZeroDiagonal)
 	if result {
 		t.Errorf("Expected matrix with non-zero diagonal to return false, got true")
 	}
-	
+
 	it("should return false for non-antisymmetric elements", t)
 
 	nonAntisymmetric := [][]int{
@@ -846,12 +849,12 @@ func TestIsAntisymmetricMatrix(t *testing.T) {
 		{-1, 0, 3},
 		{2, 4, 0},
 	}
-	
+
 	result = IsAntisymmetricMatrix(nonAntisymmetric)
 	if result {
 		t.Errorf("Expected non-antisymmetric matrix to return false, got true")
 	}
-	
+
 	context("when matrix is not square", t)
 	it("should return false", t)
 
@@ -859,19 +862,57 @@ func TestIsAntisymmetricMatrix(t *testing.T) {
 		{0, 1, -2},
 		{-1, 0, 3},
 	}
-	
+
 	result = IsAntisymmetricMatrix(nonSquare)
 	if result {
 		t.Errorf("Expected non-square matrix to return false, got true")
 	}
-	
+
 	context("when matrix is empty", t)
 	it("should handle empty matrix", t)
 
 	empty := [][]int{}
-	
+
 	result = IsAntisymmetricMatrix(empty)
 	if result {
 		t.Errorf("Expected empty matrix to return false, got true")
+	}
+}
+
+// TestPrintMatrix tests the PrintMatrix function
+func TestPrintMatrix(t *testing.T) {
+	describe("PrintMatrix", t)
+	it("should print the matrix correctly", t)
+	matrix := [][]int{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+	}
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	PrintMatrix(matrix)
+	w.Close()
+	os.Stdout = oldStdout
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+	output := buf.String()
+	expectedOutput := "[1 2 3]\n[4 5 6]\n[7 8 9]\n"
+	if output != expectedOutput {
+		t.Errorf("Expected output:\n%s\nGot:\n%s", expectedOutput, output)
+	}
+
+	it("should handle empty matrix", t)
+	emptyMatrix := [][]int{}
+	r, w, _ = os.Pipe()
+	os.Stdout = w
+	PrintMatrix(emptyMatrix)
+	w.Close()
+	os.Stdout = oldStdout
+	buf.Reset()
+	io.Copy(&buf, r)
+	output = buf.String()
+	if output != "" {
+		t.Errorf("Expected empty output for empty matrix, got: %s", output)
 	}
 }
