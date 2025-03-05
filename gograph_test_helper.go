@@ -27,3 +27,13 @@ func it(description string, t *testing.T) {
 func context(description string, t *testing.T) {
 	t.Logf(" - when %s", description)
 }
+
+func CreateDirectedGraphHelper() DirectedGraph {
+	var node *DirectedNode
+	var graphDirectedNodes []*DirectedNode
+	return DirectedGraph{
+		DirectedNodes:    graphDirectedNodes,
+		RootDirectedNode: node,
+		NodeMap:          make(map[string]*DirectedNode),
+	}
+}

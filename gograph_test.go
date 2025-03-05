@@ -10,7 +10,7 @@ import (
 // TestCreateGraph tests gograph operations
 func TestCreateGraph(t *testing.T) {
 	describe("CreateGraph", t)
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 
 	it("creates a nil root node.", t)
 	if graph.RootDirectedNode != nil {
@@ -27,9 +27,8 @@ func TestCreateGraph(t *testing.T) {
 
 // TestCreateDirectedNode tests gograph operations
 func TestCreateDirectedNode(t *testing.T) {
-	// Empty graph
 	describe("CreateDirectedNode", t)
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var newRootDirectedNode, newDirectedNode1, newDirectedNode2, newDirectedNode3 *DirectedNode
 
 	context("child and parent aren't specified", t)
@@ -105,27 +104,27 @@ func TestFindNode(t *testing.T) {
 
 	context("the desired node is in the graph", t)
 	it("should find the correct node", t)
-	var graph = Graph{}
+	var graph = CreateGraph()
 	var newNode *Node
 	var nodeIndex int
 
 	// Create 10,000 nodes in the graph
 	for i := 0; i < 10000; i++ {
-		var nodeID = CreateDirectedNodeID()
-		newNode = &Node{Edges: nil, ID: nodeID}
+		var nodeID = CreateNodeID()
+		newNode = &Node{Edges: nil, Values: make(map[string]string), ID: nodeID}
 		graph.Nodes = append(graph.Nodes, newNode)
 	}
 
 	// Select a random one, the 1338th node, and do a lookup on its ID.
 	// Expect the function to return the index in the graph for the same node.
 	var nodeID = graph.Nodes[1337].ID
-	nodeIndex = FindNode(graph, nodeID)
+	nodeIndex, _ = FindNode(graph, nodeID)
 	expectEqualInts(nodeIndex, 1337, t)
 
 	context("the desired node is NOT in the graph", t)
 	it("returns an index of -1", t)
 	var fakeNodeID = "not-a-true-id"
-	nodeIndex = FindNode(graph, fakeNodeID)
+	nodeIndex, _ = FindNode(graph, fakeNodeID)
 	expectEqualInts(nodeIndex, -1, t)
 }
 
@@ -154,7 +153,7 @@ func TestFindDirectedNode(t *testing.T) {
 
 	context("the desired node is in the graph", t)
 	rand.Seed(time.Now().UnixNano())
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var parentDirectedNode, node *DirectedNode
 	graph, parentDirectedNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
 
@@ -192,7 +191,7 @@ func TestFindNodesByValues(t *testing.T) {
 
 	context("the desired node is in the graph", t)
 	rand.Seed(time.Now().UnixNano())
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var parentDirectedNode, node, targetNode *DirectedNode
 	var foundNodes []*DirectedNode
 
@@ -217,7 +216,7 @@ func TestFindNodesByValues(t *testing.T) {
 func TestCreateDirectedEdge(t *testing.T) {
 	describe("FindDirectedNode", t)
 	rand.Seed(time.Now().UnixNano())
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var parentNode, childNode, cousinNode *DirectedNode
 	graph, parentNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
 	graph, childNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
@@ -243,7 +242,7 @@ func TestCreateDirectedEdge(t *testing.T) {
 func TestDeleteDirectedEdge(t *testing.T) {
 	describe("DeleteDirectedEdge", t)
 	rand.Seed(time.Now().UnixNano())
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var parentNode, childNode *DirectedNode
 	graph, parentNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
 	graph, childNode = CreateDirectedNode(graph, nil, []*DirectedNode{}, []*DirectedNode{})
@@ -260,7 +259,7 @@ func TestDeleteDirectedEdge(t *testing.T) {
 func TestTopologicalSort(t *testing.T) {
 	describe("TopologicalSort", t)
 	it("should correctly sort the graph", t)
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var nodeA, nodeB, nodeC, nodeD, nodeE *DirectedNode
 	var sortedNodes []*DirectedNode
 	var err error
@@ -291,7 +290,7 @@ func TestTopologicalSort(t *testing.T) {
 	//  B   C
 	//   \ /
 	//    D
-	graph = CreateGraph()
+	graph = CreateDirectedGraphHelper()
 	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
@@ -313,7 +312,7 @@ func TestTopologicalSort(t *testing.T) {
 	//    D   E
 	//    |   |
 	//    F   G
-	graph = CreateGraph()
+	graph = CreateDirectedGraphHelper()
 	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
@@ -354,7 +353,7 @@ func TestCreateAdjecencyMatrix(t *testing.T) {
 	//   \ /
 	//    D
 
-	graphA = CreateGraph()
+	graphA = CreateDirectedGraphHelper()
 	graphA, nodeA = CreateDirectedNode(graphA, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graphA, nodeB = CreateDirectedNode(graphA, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graphA, nodeC = CreateDirectedNode(graphA, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
@@ -376,7 +375,7 @@ func TestCreateAdjecencyMatrix(t *testing.T) {
 		{0, 0, 0, 0, 0, 0, 0},
 		{0, 0, 0, 0, 0, 0, 0},
 	}
-	graphB = CreateGraph()
+	graphB = CreateDirectedGraphHelper()
 	graphB, nodeA = CreateDirectedNode(graphB, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graphB, nodeB = CreateDirectedNode(graphB, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graphB, nodeC = CreateDirectedNode(graphB, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
@@ -401,7 +400,7 @@ func TestCreateAdjecencyMatrix(t *testing.T) {
 func TestCreateIncidenceMatrix(t *testing.T) {
 	describe("CreateIncidenceMatrix", t)
 	it("should correctly describe the edge relationships between nodes", t)
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var incidenceMatrix [][]int
 	var nodeA, nodeB, nodeC *DirectedNode
 	var expectedMatrix = [][]int{
@@ -437,7 +436,7 @@ func TestHasCycle(t *testing.T) {
 
 	context("graph has no cycles", t)
 	it("should return false", t)
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var nodeA, nodeB, nodeC, nodeD *DirectedNode
 
 	// Create a DAG:
@@ -464,7 +463,7 @@ func TestHasCycle(t *testing.T) {
 	//  ^   |
 	//  |   v
 	//  D<--E
-	graph = CreateGraph()
+	graph = CreateDirectedGraphHelper()
 	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA, nodeB}, []*DirectedNode{})
@@ -485,7 +484,7 @@ func TestFindPath(t *testing.T) {
 
 	context("path exists", t)
 	it("should return the correct path", t)
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var nodeA, nodeB, nodeC, nodeD *DirectedNode
 
 	// Create a graph:
@@ -527,7 +526,7 @@ func TestFindStronglyConnectedComponents(t *testing.T) {
 	describe("FindStronglyConnectedComponents", t)
 
 	context("a graph has multiple components", t)
-	var graph = CreateGraph()
+	var graph = CreateDirectedGraphHelper()
 	var nodeA, nodeB, nodeC, nodeD, nodeE, nodeF *DirectedNode
 
 	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
@@ -565,4 +564,246 @@ func TestFindStronglyConnectedComponents(t *testing.T) {
 	if compSizes[0] != 3 || compSizes[1] != 3 {
 		t.Errorf("Expected components of size 3, got %v", compSizes)
 	}
+}
+
+// TestBasicGraph tests the undirected graph operations
+func TestBasicGraph(t *testing.T) {
+	describe("Basic Undirected Graph", t)
+
+	it("creates an empty graph", t)
+	graph := CreateGraph()
+	expectEqualInts(len(graph.Nodes), 0, t)
+
+	context("when adding nodes", t)
+	it("adds nodes correctly", t)
+	graph, node1 := CreateNode(graph, map[string]string{"name": "node1"})
+	graph, node2 := CreateNode(graph, map[string]string{"name": "node2"})
+	graph, node3 := CreateNode(graph, map[string]string{"name": "node3"})
+
+	expectEqualInts(len(graph.Nodes), 3, t)
+	expectEqualStrings(node1.Values["name"], "node1", t)
+	expectEqualStrings(node2.Values["name"], "node2", t)
+	expectEqualStrings(node3.Values["name"], "node3", t)
+
+	context("when adding edges", t)
+	it("creates undirected edges correctly", t)
+	graph = AddUndirectedEdge(graph, node1, node2)
+	graph = AddUndirectedEdge(graph, node2, node3)
+
+	expectEqualInts(len(node1.Edges), 1, t)
+	expectEqualInts(len(node2.Edges), 2, t)
+	expectEqualInts(len(node3.Edges), 1, t)
+
+	expectEqualStrings(node1.Edges[0].ID, node2.ID, t)
+	expectEqualStrings(node2.Edges[0].ID, node1.ID, t)
+	expectEqualStrings(node2.Edges[1].ID, node3.ID, t)
+	expectEqualStrings(node3.Edges[0].ID, node2.ID, t)
+
+	context("when removing edges", t)
+	it("removes undirected edges correctly", t)
+	graph = RemoveUndirectedEdge(graph, node1, node2)
+
+	expectEqualInts(len(node1.Edges), 0, t)
+	expectEqualInts(len(node2.Edges), 1, t)
+	expectEqualStrings(node2.Edges[0].ID, node3.ID, t)
+
+	context("when finding nodes", t)
+	it("finds nodes by ID correctly", t)
+	index, foundNode := FindNode(graph, node2.ID)
+	expectEqualInts(index, 1, t)
+	expectEqualStrings(foundNode.ID, node2.ID, t)
+
+	index, foundNode = FindNode(graph, "non-existent-id")
+	expectEqualInts(index, -1, t)
+	if foundNode != nil {
+		t.Errorf("Expected nil node for non-existent ID, got %+v", foundNode)
+	}
+}
+
+// TestGenericGraph tests the generic flexible graph operations
+func TestGenericGraph(t *testing.T) {
+	describe("Generic Flexible Graph", t)
+
+	it("creates a graph with specified edge types", t)
+	edgeTypes := []string{"Friends", "Enemies", "Colleagues"}
+	graph := CreateGenericGraph(edgeTypes)
+
+	expectEqualInts(len(graph.Nodes), 0, t)
+
+	context("when adding nodes", t)
+	it("adds nodes with correct edge types", t)
+
+	// Create the first node manually since we need to set up the edge types
+	nodeID := CreateNodeID()
+	edgeTypeMap := make(map[string]int)
+	for i, edgeType := range edgeTypes {
+		edgeTypeMap[edgeType] = i
+	}
+
+	edges := make([][]*GenericNode, len(edgeTypes))
+	firstNode := &GenericNode{
+		Edges:     edges,
+		EdgeTypes: edgeTypeMap,
+		Values:    map[string]string{"name": "node1"},
+		ID:        nodeID,
+	}
+
+	graph.Nodes = append(graph.Nodes, firstNode)
+	graph.NodeMap[firstNode.ID] = firstNode
+
+	graph, node2 := CreateGenericNode(graph, map[string]string{"name": "node2"})
+	graph, node3 := CreateGenericNode(graph, map[string]string{"name": "node3"})
+
+	expectEqualInts(len(graph.Nodes), 3, t)
+	expectEqualStrings(graph.Nodes[0].Values["name"], "node1", t)
+	expectEqualStrings(node2.Values["name"], "node2", t)
+	expectEqualStrings(node3.Values["name"], "node3", t)
+
+	context("when adding edges", t)
+	it("creates edges of different types correctly", t)
+
+	var err error
+	graph, err = AddEdge(graph, firstNode, node2, "Friends")
+	if err != nil {
+		t.Errorf("Failed to add edge: %v", err)
+	}
+
+	graph, err = AddEdge(graph, firstNode, node3, "Enemies")
+	if err != nil {
+		t.Errorf("Failed to add edge: %v", err)
+	}
+
+	graph, err = AddEdge(graph, node2, node3, "Colleagues")
+	if err != nil {
+		t.Errorf("Failed to add edge: %v", err)
+	}
+
+	_, err = AddEdge(graph, node2, firstNode, "InvalidType")
+	if err == nil {
+		t.Errorf("Expected error for invalid edge type, got nil")
+	}
+
+	context("when retrieving related nodes", t)
+	it("gets nodes related by a specific edge type", t)
+
+	friends, err := GetRelatedNodes(firstNode, "Friends")
+	if err != nil {
+		t.Errorf("Failed to get related nodes: %v", err)
+	}
+	expectEqualInts(len(friends), 1, t)
+	expectEqualStrings(friends[0].ID, node2.ID, t)
+
+	enemies, err := GetRelatedNodes(firstNode, "Enemies")
+	if err != nil {
+		t.Errorf("Failed to get related nodes: %v", err)
+	}
+	expectEqualInts(len(enemies), 1, t)
+	expectEqualStrings(enemies[0].ID, node3.ID, t)
+
+	it("handles invalid relationship types", t)
+	_, err = GetRelatedNodes(firstNode, "InvalidType")
+	if err == nil {
+		t.Errorf("Expected error for invalid relationship type, got nil")
+	}
+
+	context("when removing edges", t)
+	it("removes edges correctly", t)
+
+	graph, err = RemoveEdge(graph, firstNode, node2, "Friends")
+	if err != nil {
+		t.Errorf("Failed to remove edge: %v", err)
+	}
+
+	friends, _ = GetRelatedNodes(firstNode, "Friends")
+	expectEqualInts(len(friends), 0, t)
+
+	context("when converting between graph types", t)
+	it("converts DirectedGraph to GenericGraph correctly", t)
+
+	dirGraph := CreateDirectedGraphHelper()
+	dirGraph, dirNode1 := CreateDirectedNode(dirGraph, map[string]string{"name": "dirNode1"}, []*DirectedNode{}, []*DirectedNode{})
+	dirGraph, dirNode2 := CreateDirectedNode(dirGraph, map[string]string{"name": "dirNode2"}, []*DirectedNode{}, []*DirectedNode{})
+	dirGraph, dirNode3 := CreateDirectedNode(dirGraph, map[string]string{"name": "dirNode3"}, []*DirectedNode{}, []*DirectedNode{})
+
+	// Add edges for parent-child relationships
+	dirGraph, _, _ = CreateDirectedEdge(dirGraph, dirNode1, dirNode2)
+	dirGraph, _, _ = CreateDirectedEdge(dirGraph, dirNode2, dirNode3)
+	genGraph := ConvertDirectedToGeneric(dirGraph)
+
+	expectEqualInts(len(genGraph.Nodes), 3, t)
+
+	var genNode1, genNode2, genNode3 *GenericNode
+	for _, node := range genGraph.Nodes {
+		if node.Values["name"] == "dirNode1" {
+			genNode1 = node
+		} else if node.Values["name"] == "dirNode2" {
+			genNode2 = node
+		} else if node.Values["name"] == "dirNode3" {
+			genNode3 = node
+		}
+	}
+
+	if genNode1 == nil || genNode2 == nil || genNode3 == nil {
+		t.Errorf("Failed to find all nodes in converted generic graph")
+		return
+	}
+
+	children, err := GetRelatedNodes(genNode1, "Children")
+	if err != nil {
+		t.Errorf("Failed to get children: %v", err)
+		return
+	}
+	expectEqualInts(len(children), 1, t)
+	expectEqualStrings(children[0].Values["name"], "dirNode2", t)
+
+	parents, err := GetRelatedNodes(genNode2, "Parents")
+	if err != nil {
+		t.Errorf("Failed to get parents: %v", err)
+		return
+	}
+	expectEqualInts(len(parents), 1, t)
+	expectEqualStrings(parents[0].Values["name"], "dirNode1", t)
+
+	parents, err = GetRelatedNodes(genNode3, "Parents")
+	if err != nil {
+		t.Errorf("Failed to get parents: %v", err)
+		return
+	}
+	expectEqualInts(len(parents), 1, t)
+
+	it("converts GenericGraph back to DirectedGraph correctly", t)
+	convertedDirGraph, err := ConvertGenericToDirected(genGraph)
+	if err != nil {
+		t.Errorf("Failed to convert back to directed graph: %v", err)
+		return
+	}
+
+	expectEqualInts(len(convertedDirGraph.DirectedNodes), 3, t)
+	var convDirNode1, convDirNode2, convDirNode3 *DirectedNode
+	for _, node := range convertedDirGraph.DirectedNodes {
+		if node.Values["name"] == "dirNode1" {
+			convDirNode1 = node
+		} else if node.Values["name"] == "dirNode2" {
+			convDirNode2 = node
+		} else if node.Values["name"] == "dirNode3" {
+			convDirNode3 = node
+		}
+	}
+
+	if convDirNode1 == nil || convDirNode2 == nil || convDirNode3 == nil {
+		t.Errorf("Failed to find all nodes in converted directed graph")
+		return
+	}
+
+	expectEqualInts(len(convDirNode1.Children), 1, t)
+	expectEqualStrings(convDirNode1.Children[0].Values["name"], "dirNode2", t)
+
+	expectEqualInts(len(convDirNode2.Parents), 1, t)
+	expectEqualStrings(convDirNode2.Parents[0].Values["name"], "dirNode1", t)
+
+	expectEqualInts(len(convDirNode2.Children), 1, t)
+	expectEqualStrings(convDirNode2.Children[0].Values["name"], "dirNode3", t)
+
+	expectEqualInts(len(convDirNode3.Parents), 1, t)
+	expectEqualStrings(convDirNode3.Parents[0].Values["name"], "dirNode2", t)
 }

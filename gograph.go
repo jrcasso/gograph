@@ -7,15 +7,34 @@ import (
 	"time"
 )
 
-// Graph has many nodes
+// Graph has many nodes with undirected edges
 type Graph struct {
-	Nodes []*Node
+	Nodes   []*Node
+	NodeMap map[string]*Node
 }
 
-// Node is a generic recursive data structure that only has undirected edges.
+// Node is a generic data structure with undirected edges
 type Node struct {
-	Edges []*Node
-	ID    string
+	Edges  []*Node
+	Values map[string]string
+	ID     string
+}
+
+// GenericGraph represents a graph with flexible edge relationships
+type GenericGraph struct {
+	Nodes   []*GenericNode
+	NodeMap map[string]*GenericNode
+}
+
+// GenericNode represents a node with flexible edge relationships
+type GenericNode struct {
+	// Edges is a slice of slices of nodes, where each index represents a different relationship type
+	// For example, Edges[0] might be "Parents", Edges[1] might be "Children", Edges[2] might be "Friends", etc.
+	// We thus track relationship types in EdgeTypes, which maps relationship names to their index in the Edges slice
+	Edges     [][]*GenericNode
+	EdgeTypes map[string]int
+	Values    map[string]string
+	ID        string
 }
 
 // DirectedGraph has many nodes with directed edges
@@ -25,20 +44,7 @@ type DirectedGraph struct {
 	NodeMap          map[string]*DirectedNode
 }
 
-// DirectedNode has a single parent node edges and a single child node edges
-// TODO: Extend node to accept more than just Parents or Children. A programmer
-//
-//	should be able to specify an arbitrary number of edge relationships thats
-//	can describe any abstract quality. Edges = [][]*DirectedNode, where the i-th edge
-//	represents a certain qualitative relationship - e.g. like Edges[0] becomes
-//	a Parent descriptor for the relationships between the nodes, and Edges[1]
-//	becomes a Child descriptor for the relationships between the nodes. It's
-//	really just a change in label that allows us to express more complex edges
-//	in our graph than the mutual exclusivity the Parent/Child relationship suggests.
-//	In truth, a mutual exclusivity would instead be enforced as a constraint on
-//	updates to this more generic graph structure, that implementation must be
-//	able to safely determine if nodes meet the constraints before insertion
-//	into the graph.
+// DirectedNode represents a node with directed edges
 type DirectedNode struct {
 	Parents  []*DirectedNode
 	Children []*DirectedNode
@@ -46,15 +52,89 @@ type DirectedNode struct {
 	ID       string
 }
 
-// CreateGraph returns a null graph object with a single root node. Does not create edges.
-func CreateGraph() DirectedGraph {
-	var node *DirectedNode
-	var graphDirectedNodes []*DirectedNode
-	return DirectedGraph{
-		DirectedNodes:    graphDirectedNodes,
-		RootDirectedNode: node,
-		NodeMap:          make(map[string]*DirectedNode),
+// CreateNodeID generates a random SHA-1 hash to be used as a node ID
+func CreateNodeID() string {
+	s := strconv.FormatInt(time.Now().UnixNano(), 10)
+	h := sha1.New()
+	h.Write([]byte(s))
+	sha1Hash := h.Sum(nil)
+	return fmt.Sprintf("%x", sha1Hash)
+}
+
+// PrintMatrix prints a matrix of integers
+func PrintMatrix(matrix [][]int) {
+	for _, row := range matrix {
+		fmt.Printf("%+v\n", row)
 	}
+}
+
+// CreateGraph returns a new undirected graph
+func CreateGraph() Graph {
+	return Graph{
+		Nodes:   []*Node{},
+		NodeMap: make(map[string]*Node),
+	}
+}
+
+// CreateNode creates a new node in the undirected graph
+func CreateNode(graph Graph, values map[string]string) (Graph, *Node) {
+	nodeID := CreateNodeID()
+	node := &Node{
+		Edges:  []*Node{},
+		Values: values,
+		ID:     nodeID,
+	}
+
+	graph.Nodes = append(graph.Nodes, node)
+	graph.NodeMap[node.ID] = node
+
+	return graph, node
+}
+
+// AddUndirectedEdge creates an undirected edge between two nodes
+func AddUndirectedEdge(graph Graph, node1 *Node, node2 *Node) Graph {
+	node1.Edges = append(node1.Edges, node2)
+	node2.Edges = append(node2.Edges, node1)
+	return graph
+}
+
+// RemoveUndirectedEdge removes an undirected edge between two nodes
+func RemoveUndirectedEdge(graph Graph, node1 *Node, node2 *Node) Graph {
+	for i, node := range node1.Edges {
+		if node.ID == node2.ID {
+			node1.Edges = append(node1.Edges[:i], node1.Edges[i+1:]...)
+			break
+		}
+	}
+
+	for i, node := range node2.Edges {
+		if node.ID == node1.ID {
+			node2.Edges = append(node2.Edges[:i], node2.Edges[i+1:]...)
+			break
+		}
+	}
+
+	return graph
+}
+
+// FindNode finds a node by ID in an undirected graph
+func FindNode(graph Graph, ID string) (int, *Node) {
+	// First check the map for O(1) lookup
+	if node, ok := graph.NodeMap[ID]; ok {
+		for index, n := range graph.Nodes {
+			if n.ID == ID {
+				return index, node
+			}
+		}
+	}
+
+	// Fallback to linear search
+	for index, node := range graph.Nodes {
+		if node.ID == ID {
+			return index, node
+		}
+	}
+	return -1, nil
 }
 
 // CreateDirectedEdge creates a parent-child relationship between two specified nodes.
@@ -141,16 +221,6 @@ func DeleteDirectedEdge(graph DirectedGraph, parent *DirectedNode, child *Direct
 	return graph, parent, child
 }
 
-// FindNode traverses the array of nodes in the graph and returns the index of the node with the specified ID
-func FindNode(graph Graph, ID string) int {
-	for index, node := range graph.Nodes {
-		if node.ID == ID {
-			return index
-		}
-	}
-	return -1
-}
-
 // FindDirectedNode finds a node by ID with O(1) complexity using the NodeMap
 func FindDirectedNode(graph DirectedGraph, ID string) (int, DirectedNode) {
 	// First check the map for O(1) lookup if it exists
@@ -164,7 +234,7 @@ func FindDirectedNode(graph DirectedGraph, ID string) (int, DirectedNode) {
 		}
 	}
 
-	// Fallback to linear search
+	// Fallback to linear search (as done generically in FindNode)
 	for index, node := range graph.DirectedNodes {
 		if node.ID == ID {
 			return index, *node
@@ -285,13 +355,6 @@ func CreateIncidenceMatrix(graph DirectedGraph) [][]int {
 	return adjMatrix
 }
 
-// PrintMatrix prints a matrix of integers
-func PrintMatrix(matrix [][]int) {
-	for _, parent := range matrix {
-		fmt.Printf("%+v\n", parent)
-	}
-}
-
 // IsAntisymmetricMatrix checks that a matrix is antisymmetric, meaning that for all i,j: matrix[i][j] = -matrix[j][i]
 func IsAntisymmetricMatrix(matrix [][]int) bool {
 	var jsize = len(matrix)
@@ -321,25 +384,6 @@ func HasCycle(graph DirectedGraph) bool {
 			}
 		}
 	}
-	return false
-}
-
-// hasCycleUtil is a helper function for HasCycle using DFS
-func hasCycleUtil(node *DirectedNode, visited, recursionStack map[string]bool) bool {
-	visited[node.ID] = true
-	recursionStack[node.ID] = true
-
-	for _, child := range node.Children {
-		if !visited[child.ID] {
-			if hasCycleUtil(child, visited, recursionStack) {
-				return true
-			}
-		} else if recursionStack[child.ID] {
-			return true
-		}
-	}
-
-	recursionStack[node.ID] = false
 	return false
 }
 
@@ -444,6 +488,202 @@ func FindStronglyConnectedComponents(graph DirectedGraph) [][]*DirectedNode {
 	return components
 }
 
+// CreateGenericGraph returns a new generic graph
+func CreateGenericGraph(edgeTypes []string) GenericGraph {
+	edgeTypeMap := make(map[string]int)
+	for i, edgeType := range edgeTypes {
+		edgeTypeMap[edgeType] = i
+	}
+
+	return GenericGraph{
+		Nodes:   []*GenericNode{},
+		NodeMap: make(map[string]*GenericNode),
+	}
+}
+
+// CreateGenericNode creates a new node with the specified edge types
+func CreateGenericNode(graph GenericGraph, values map[string]string) (GenericGraph, *GenericNode) {
+	nodeID := CreateDirectedNodeID() // Reuse the existing ID generation function
+	edges := make([][]*GenericNode, len(graph.Nodes[0].EdgeTypes))
+
+	node := &GenericNode{
+		Edges:     edges,
+		EdgeTypes: graph.Nodes[0].EdgeTypes,
+		Values:    values,
+		ID:        nodeID,
+	}
+
+	graph.Nodes = append(graph.Nodes, node)
+	graph.NodeMap[node.ID] = node
+
+	return graph, node
+}
+
+// AddEdge adds a directional edge of the specified type between two nodes
+func AddEdge(graph GenericGraph, fromNode *GenericNode, toNode *GenericNode, edgeType string) (GenericGraph, error) {
+	edgeIndex, exists := fromNode.EdgeTypes[edgeType]
+	if !exists {
+		return graph, fmt.Errorf("edge type '%s' not defined in graph", edgeType)
+	}
+	fromNode.Edges[edgeIndex] = append(fromNode.Edges[edgeIndex], toNode)
+	return graph, nil
+}
+
+// RemoveEdge removes a directional edge of the specified type between two nodes
+func RemoveEdge(graph GenericGraph, fromNode *GenericNode, toNode *GenericNode, edgeType string) (GenericGraph, error) {
+	edgeIndex, exists := fromNode.EdgeTypes[edgeType]
+	if !exists {
+		return graph, fmt.Errorf("edge type '%s' not defined in graph", edgeType)
+	}
+
+	for i, node := range fromNode.Edges[edgeIndex] {
+		if node.ID == toNode.ID {
+			fromNode.Edges[edgeIndex] = append(fromNode.Edges[edgeIndex][:i], fromNode.Edges[edgeIndex][i+1:]...)
+			break
+		}
+	}
+
+	return graph, nil
+}
+
+// GetRelatedNodes returns all nodes related to the given node by the specified edge type
+func GetRelatedNodes(node *GenericNode, edgeType string) ([]*GenericNode, error) {
+	edgeIndex, exists := node.EdgeTypes[edgeType]
+	if !exists {
+		return nil, fmt.Errorf("edge type '%s' not defined in graph", edgeType)
+	}
+
+	return node.Edges[edgeIndex], nil
+}
+
+// ConvertDirectedToGeneric converts a DirectedGraph to a GenericGraph
+func ConvertDirectedToGeneric(directedGraph DirectedGraph) GenericGraph {
+	edgeTypes := []string{"Parents", "Children"}
+	genericGraph := CreateGenericGraph(edgeTypes)
+
+	edgeTypeMap := make(map[string]int)
+	for i, edgeType := range edgeTypes {
+		edgeTypeMap[edgeType] = i
+	}
+
+	nodeMap := make(map[string]*GenericNode)
+	for _, dirNode := range directedGraph.DirectedNodes {
+		nodeID := dirNode.ID
+		edges := make([][]*GenericNode, len(edgeTypes))
+
+		genericNode := &GenericNode{
+			Edges:     edges,
+			EdgeTypes: edgeTypeMap,
+			Values:    dirNode.Values,
+			ID:        nodeID,
+		}
+
+		genericGraph.Nodes = append(genericGraph.Nodes, genericNode)
+		genericGraph.NodeMap[nodeID] = genericNode
+		nodeMap[nodeID] = genericNode
+	}
+
+	for _, dirNode := range directedGraph.DirectedNodes {
+		genericNode := nodeMap[dirNode.ID]
+
+		// Add parent edges
+		parentsIndex := genericNode.EdgeTypes["Parents"]
+		for _, parent := range dirNode.Parents {
+			genericParent := nodeMap[parent.ID]
+			genericNode.Edges[parentsIndex] = append(genericNode.Edges[parentsIndex], genericParent)
+		}
+
+		// Add child edges
+		childrenIndex := genericNode.EdgeTypes["Children"]
+		for _, child := range dirNode.Children {
+			genericChild := nodeMap[child.ID]
+			genericNode.Edges[childrenIndex] = append(genericNode.Edges[childrenIndex], genericChild)
+		}
+	}
+
+	return genericGraph
+}
+
+// ConvertGenericToDirected converts a GenericGraph to a DirectedGraph
+// Note: This assumes the GenericGraph has "Parents" and "Children" edge types
+func ConvertGenericToDirected(genericGraph GenericGraph) (DirectedGraph, error) {
+	directedGraph := DirectedGraph{
+		DirectedNodes: []*DirectedNode{},
+		NodeMap:       make(map[string]*DirectedNode),
+	}
+
+	// Check if the generic graph has the required edge types
+	if len(genericGraph.Nodes) > 0 {
+		_, hasParents := genericGraph.Nodes[0].EdgeTypes["Parents"]
+		_, hasChildren := genericGraph.Nodes[0].EdgeTypes["Children"]
+		if !hasParents || !hasChildren {
+			return directedGraph, fmt.Errorf("generic graph does not have required 'Parents' and 'Children' edge types")
+		}
+	}
+
+	nodeMap := make(map[string]*DirectedNode)
+	for _, genNode := range genericGraph.Nodes {
+		dirNode := &DirectedNode{
+			Parents:  []*DirectedNode{},
+			Children: []*DirectedNode{},
+			Values:   genNode.Values,
+			ID:       genNode.ID,
+		}
+
+		directedGraph.DirectedNodes = append(directedGraph.DirectedNodes, dirNode)
+		directedGraph.NodeMap[dirNode.ID] = dirNode
+		nodeMap[genNode.ID] = dirNode
+	}
+
+	for _, genNode := range genericGraph.Nodes {
+		dirNode := nodeMap[genNode.ID]
+
+		// Add parent edges...
+		parentsIndex := genNode.EdgeTypes["Parents"]
+		for _, parent := range genNode.Edges[parentsIndex] {
+			dirParent := nodeMap[parent.ID]
+			dirNode.Parents = append(dirNode.Parents, dirParent)
+			dirParent.Children = append(dirParent.Children, dirNode)
+		}
+	}
+
+	if len(directedGraph.DirectedNodes) > 0 {
+		for _, node := range directedGraph.DirectedNodes {
+			if len(node.Parents) == 0 {
+				directedGraph.RootDirectedNode = node
+				break
+			}
+		}
+
+		// If no node without parents is found, just use the first node
+		if directedGraph.RootDirectedNode == nil {
+			directedGraph.RootDirectedNode = directedGraph.DirectedNodes[0]
+		}
+	}
+
+	return directedGraph, nil
+}
+
+// hasCycleUtil is a helper function for HasCycle using DFS
+func hasCycleUtil(node *DirectedNode, visited, recursionStack map[string]bool) bool {
+	visited[node.ID] = true
+	recursionStack[node.ID] = true
+
+	for _, child := range node.Children {
+		if !visited[child.ID] {
+			if hasCycleUtil(child, visited, recursionStack) {
+				return true
+			}
+		} else if recursionStack[child.ID] {
+			return true
+		}
+	}
+
+	recursionStack[node.ID] = false
+	return false
+}
+
+// min returns the smaller of two integers
 func min(a, b int) int {
 	if a < b {
 		return a
