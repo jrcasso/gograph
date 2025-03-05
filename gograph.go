@@ -27,17 +27,18 @@ type DirectedGraph struct {
 
 // DirectedNode has a single parent node edges and a single child node edges
 // TODO: Extend node to accept more than just Parents or Children. A programmer
-//       should be able to specify an arbitrary number of edge relationships thats
-//       can describe any abstract quality. Edges = [][]*DirectedNode, where the i-th edge
-//       represents a certain qualitative relationship - e.g. like Edges[0] becomes
-//       a Parent descriptor for the relationships between the nodes, and Edges[1]
-//       becomes a Child descriptor for the relationships between the nodes. It's
-//       really just a change in label that allows us to express more complex edges
-//       in our graph than the mutual exclusivity the Parent/Child relationship suggests.
-//       In truth, a mutual exclusivity would instead be enforced as a constraint on
-//       updates to this more generic graph structure, that implementation must be
-//       able to safely determine if nodes meet the constraints before insertion
-//       into the graph.
+//
+//	should be able to specify an arbitrary number of edge relationships thats
+//	can describe any abstract quality. Edges = [][]*DirectedNode, where the i-th edge
+//	represents a certain qualitative relationship - e.g. like Edges[0] becomes
+//	a Parent descriptor for the relationships between the nodes, and Edges[1]
+//	becomes a Child descriptor for the relationships between the nodes. It's
+//	really just a change in label that allows us to express more complex edges
+//	in our graph than the mutual exclusivity the Parent/Child relationship suggests.
+//	In truth, a mutual exclusivity would instead be enforced as a constraint on
+//	updates to this more generic graph structure, that implementation must be
+//	able to safely determine if nodes meet the constraints before insertion
+//	into the graph.
 type DirectedNode struct {
 	Parents  []*DirectedNode
 	Children []*DirectedNode
@@ -96,7 +97,7 @@ func CreateDirectedNode(graph DirectedGraph, values map[string]string, parents [
 	if len(children) > 0 {
 		updateRelationships(children, false)
 	}
-	
+
 	if len(parents) > 0 {
 		updateRelationships(parents, true)
 	}
@@ -162,7 +163,7 @@ func FindDirectedNode(graph DirectedGraph, ID string) (int, DirectedNode) {
 			}
 		}
 	}
-	
+
 	// Fallback to linear search
 	for index, node := range graph.DirectedNodes {
 		if node.ID == ID {
@@ -306,4 +307,146 @@ func IsAntisymmetricMatrix(matrix [][]int) bool {
 		}
 	}
 	return true
+}
+
+// HasCycle checks if the directed graph contains any cycles
+func HasCycle(graph DirectedGraph) bool {
+	visited := make(map[string]bool)
+	recursionStack := make(map[string]bool)
+
+	for _, node := range graph.DirectedNodes {
+		if !visited[node.ID] {
+			if hasCycleUtil(node, visited, recursionStack) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// hasCycleUtil is a helper function for HasCycle using DFS
+func hasCycleUtil(node *DirectedNode, visited, recursionStack map[string]bool) bool {
+	visited[node.ID] = true
+	recursionStack[node.ID] = true
+
+	for _, child := range node.Children {
+		if !visited[child.ID] {
+			if hasCycleUtil(child, visited, recursionStack) {
+				return true
+			}
+		} else if recursionStack[child.ID] {
+			return true
+		}
+	}
+
+	recursionStack[node.ID] = false
+	return false
+}
+
+// FindPath finds a path between source and target nodes with a BFS, if one exists
+func FindPath(graph DirectedGraph, sourceID, targetID string) ([]*DirectedNode, error) {
+	sourceIndex, _ := FindDirectedNode(graph, sourceID)
+	targetIndex, _ := FindDirectedNode(graph, targetID)
+
+	if sourceIndex == -1 || targetIndex == -1 {
+		return nil, fmt.Errorf("source or target node not found in graph")
+	}
+
+	visited := make(map[string]bool)
+	queue := [][]*DirectedNode{{graph.DirectedNodes[sourceIndex]}}
+
+	for len(queue) > 0 {
+		path := queue[0]
+		queue = queue[1:]
+		node := path[len(path)-1]
+
+		if node.ID == targetID {
+			return path, nil
+		}
+
+		if visited[node.ID] {
+			continue
+		}
+
+		visited[node.ID] = true
+
+		for _, child := range node.Children {
+			if !visited[child.ID] {
+				newPath := make([]*DirectedNode, len(path)+1)
+				copy(newPath, path)
+				newPath[len(path)] = child
+				queue = append(queue, newPath)
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("no path found from source to target")
+}
+
+// FindStronglyConnectedComponents finds all strongly connected components in the graph (Tarjan's algorithm)
+func FindStronglyConnectedComponents(graph DirectedGraph) [][]*DirectedNode {
+	if len(graph.DirectedNodes) == 0 {
+		return [][]*DirectedNode{}
+	}
+
+	var components [][]*DirectedNode
+	var index int = 0
+	var stack []*DirectedNode
+
+	indices := make(map[string]int)
+	lowLinks := make(map[string]int)
+	onStack := make(map[string]bool)
+
+	for _, node := range graph.DirectedNodes {
+		indices[node.ID] = -1
+		lowLinks[node.ID] = -1
+		onStack[node.ID] = false
+	}
+
+	var strongConnect func(*DirectedNode)
+	strongConnect = func(node *DirectedNode) {
+		indices[node.ID] = index
+		lowLinks[node.ID] = index
+		index++
+		stack = append(stack, node)
+		onStack[node.ID] = true
+
+		for _, child := range node.Children {
+			if indices[child.ID] == -1 {
+				strongConnect(child)
+				lowLinks[node.ID] = min(lowLinks[node.ID], lowLinks[child.ID])
+			} else if onStack[child.ID] {
+				lowLinks[node.ID] = min(lowLinks[node.ID], indices[child.ID])
+			}
+		}
+
+		if lowLinks[node.ID] == indices[node.ID] {
+			var component []*DirectedNode
+			var componentNode *DirectedNode
+			for {
+				componentNode, stack = stack[len(stack)-1], stack[:len(stack)-1]
+				onStack[componentNode.ID] = false
+				component = append(component, componentNode)
+				if componentNode.ID == node.ID {
+					break
+				}
+			}
+			components = append(components, component)
+		}
+	}
+
+	for _, node := range graph.DirectedNodes {
+		if indices[node.ID] == -1 {
+			strongConnect(node)
+		}
+	}
+
+	return components
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

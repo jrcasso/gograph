@@ -416,7 +416,6 @@ func TestCreateIncidenceMatrix(t *testing.T) {
 	//  B   C
 	//   \ /
 	//    D
-	graph = CreateGraph()
 	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
 	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
@@ -430,5 +429,140 @@ func TestCreateIncidenceMatrix(t *testing.T) {
 				return
 			}
 		}
+	}
+}
+
+func TestHasCycle(t *testing.T) {
+	describe("HasCycle", t)
+
+	context("graph has no cycles", t)
+	it("should return false", t)
+	var graph = CreateGraph()
+	var nodeA, nodeB, nodeC, nodeD *DirectedNode
+
+	// Create a DAG:
+	//    A
+	//   / \
+	//  B   C
+	//   \ /
+	//    D
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
+
+	if HasCycle(graph) {
+		t.Errorf("Failed: expected no cycle in acyclic graph")
+	}
+
+	context("graph has a cycle", t)
+	it("should return true", t)
+	// Create a graph with a cycle:
+	//    A
+	//   / \
+	//  B-->C
+	//  ^   |
+	//  |   v
+	//  D<--E
+	graph = CreateGraph()
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA, nodeB}, []*DirectedNode{})
+	graph, nodeD = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeE"}, []*DirectedNode{nodeC}, []*DirectedNode{})
+
+	// Add edges to create a cycle: B <- D <- E <- C <- B
+	graph, _, _ = CreateDirectedEdge(graph, nodeD, nodeB)
+	graph, _, _ = CreateDirectedEdge(graph, nodeC, nodeD)
+
+	if !HasCycle(graph) {
+		t.Errorf("Failed: expected to detect cycle in cyclic graph")
+	}
+}
+
+func TestFindPath(t *testing.T) {
+	describe("FindPath", t)
+
+	context("path exists", t)
+	it("should return the correct path", t)
+	var graph = CreateGraph()
+	var nodeA, nodeB, nodeC, nodeD *DirectedNode
+
+	// Create a graph:
+	//    A
+	//   / \
+	//  B   C
+	//  |   |
+	//  D   E
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
+	graph, nodeD = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB}, []*DirectedNode{})
+	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeE"}, []*DirectedNode{nodeC}, []*DirectedNode{})
+
+	path, err := FindPath(graph, nodeA.ID, nodeD.ID)
+	if err != nil {
+		t.Errorf("Failed: unexpected error: %v", err)
+		return
+	}
+
+	it("should return a path of length 3", t)
+	expectEqualInts(len(path), 3, t)
+
+	it("should return the correct path nodes", t)
+	expectEqualStrings(path[0].Values["name"], "nodeA", t)
+	expectEqualStrings(path[1].Values["name"], "nodeB", t)
+	expectEqualStrings(path[2].Values["name"], "nodeD", t)
+
+	// A path from D to C is impossible, so we should get an error
+	context("path does not exist", t)
+	it("should return an error", t)
+	_, err = FindPath(graph, nodeD.ID, nodeC.ID)
+	if err == nil {
+		t.Errorf("Failed: expected error for non-existent path")
+	}
+}
+
+func TestFindStronglyConnectedComponents(t *testing.T) {
+	describe("FindStronglyConnectedComponents", t)
+
+	context("a graph has multiple components", t)
+	var graph = CreateGraph()
+	var nodeA, nodeB, nodeC, nodeD, nodeE, nodeF *DirectedNode
+
+	graph, nodeA = CreateDirectedNode(graph, map[string]string{"name": "nodeA"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeD = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeE = CreateDirectedNode(graph, map[string]string{"name": "nodeE"}, []*DirectedNode{}, []*DirectedNode{})
+	graph, nodeF = CreateDirectedNode(graph, map[string]string{"name": "nodeF"}, []*DirectedNode{}, []*DirectedNode{})
+
+	// Create two components with cycles
+	graph, _, _ = CreateDirectedEdge(graph, nodeA, nodeB)
+	graph, _, _ = CreateDirectedEdge(graph, nodeB, nodeC)
+	graph, _, _ = CreateDirectedEdge(graph, nodeC, nodeA)
+
+	graph, _, _ = CreateDirectedEdge(graph, nodeD, nodeE)
+	graph, _, _ = CreateDirectedEdge(graph, nodeE, nodeF)
+	graph, _, _ = CreateDirectedEdge(graph, nodeF, nodeD)
+
+	// Connect components with a one-way edge
+	graph, _, _ = CreateDirectedEdge(graph, nodeC, nodeD)
+	components := FindStronglyConnectedComponents(graph)
+
+	it("should have 2 components", t)
+	if len(components) != 2 {
+		t.Errorf("Expected 2 components, got %d", len(components))
+		return
+	}
+
+	compSizes := make([]int, 0, len(components))
+	for _, comp := range components {
+		compSizes = append(compSizes, len(comp))
+	}
+
+	it("should return components that each have 3 nodes", t)
+	if compSizes[0] != 3 || compSizes[1] != 3 {
+		t.Errorf("Expected components of size 3, got %v", compSizes)
 	}
 }
