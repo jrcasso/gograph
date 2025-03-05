@@ -77,30 +77,30 @@ func CreateDirectedNode(graph DirectedGraph, values map[string]string, parents [
 		ID:       nodeID,
 	}
 
-	// TODO: Once a more generic notion of edges is implemented, DRY the next two blocks
-	//       into a single loop.
-	// Create edge between children nodes by updating their Parents reference to include this new node
-	if len(children) > 0 {
-		for _, child := range children {
-			var index, _ = FindDirectedNode(graph, child.ID)
-			if index == 0 {
+	updateRelationships := func(relatedNodes []*DirectedNode, isParentRelation bool) {
+		for _, relatedNode := range relatedNodes {
+			var index, _ = FindDirectedNode(graph, relatedNode.ID)
+
+			if !isParentRelation && index == 0 {
 				panic("Attempted to become a parent of the root node! Forbidden node creation.")
 			}
-			graph.DirectedNodes[index].Parents = append(child.Parents, node)
+
+			if isParentRelation {
+				graph.DirectedNodes[index].Children = append(graph.DirectedNodes[index].Children, node)
+			} else {
+				graph.DirectedNodes[index].Parents = append(graph.DirectedNodes[index].Parents, node)
+			}
 		}
 	}
 
-	// Create edge between parent nodes by updating their Children reference to include this new node
+	if len(children) > 0 {
+		updateRelationships(children, false)
+	}
+	
 	if len(parents) > 0 {
-		for _, parent := range parents {
-			var index, _ = FindDirectedNode(graph, parent.ID)
-			graph.DirectedNodes[index].Children = append(parent.Children, node)
-		}
+		updateRelationships(parents, true)
 	}
 
-	// Should a graph own the properties that make a node unique?
-	// Or should the node itself own that same property. Perhaps both
-	// for more extensible operations?
 	graph.DirectedNodes = append(graph.DirectedNodes, node)
 	if len(graph.DirectedNodes) == 1 {
 		if len(graph.DirectedNodes[0].Parents) > 0 {
