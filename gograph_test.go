@@ -263,6 +263,7 @@ func TestTopologicalSort(t *testing.T) {
 	var graph = CreateGraph()
 	var nodeA, nodeB, nodeC, nodeD, nodeE *DirectedNode
 	var sortedNodes []*DirectedNode
+	var err error
 
 	//    A
 	//   / \
@@ -275,7 +276,11 @@ func TestTopologicalSort(t *testing.T) {
 	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA, nodeB}, []*DirectedNode{})
 	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeC}, []*DirectedNode{})
-	sortedNodes = TopologicalSort(graph)
+	sortedNodes, err = TopologicalSort(graph)
+	if err != nil {
+		t.Errorf("Failed: unexpected error: %v", err)
+		return
+	}
 	expectEqualStrings(sortedNodes[0].Values["name"], "nodeD", t)
 	expectEqualStrings(sortedNodes[1].Values["name"], "nodeC", t)
 	expectEqualStrings(sortedNodes[2].Values["name"], "nodeB", t)
@@ -291,7 +296,11 @@ func TestTopologicalSort(t *testing.T) {
 	graph, nodeB = CreateDirectedNode(graph, map[string]string{"name": "nodeB"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, nodeC = CreateDirectedNode(graph, map[string]string{"name": "nodeC"}, []*DirectedNode{nodeA}, []*DirectedNode{})
 	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeD"}, []*DirectedNode{nodeB, nodeC}, []*DirectedNode{})
-	sortedNodes = TopologicalSort(graph)
+	sortedNodes, err = TopologicalSort(graph)
+	if err != nil {
+		t.Errorf("Failed: unexpected error: %v", err)
+		return
+	}
 	expectEqualStrings(sortedNodes[0].Values["name"], "nodeD", t)
 	expectEqualStrings(sortedNodes[1].Values["name"], "nodeB", t)
 	expectEqualStrings(sortedNodes[2].Values["name"], "nodeC", t)
@@ -312,7 +321,11 @@ func TestTopologicalSort(t *testing.T) {
 	graph, nodeE = CreateDirectedNode(graph, map[string]string{"name": "nodeE"}, []*DirectedNode{nodeC}, []*DirectedNode{})
 	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeF"}, []*DirectedNode{nodeD}, []*DirectedNode{})
 	graph, _ = CreateDirectedNode(graph, map[string]string{"name": "nodeG"}, []*DirectedNode{nodeE}, []*DirectedNode{})
-	sortedNodes = TopologicalSort(graph)
+	sortedNodes, err = TopologicalSort(graph)
+	if err != nil {
+		t.Errorf("Failed: unexpected error: %v", err)
+		return
+	}
 	expectEqualStrings(sortedNodes[0].Values["name"], "nodeF", t)
 	expectEqualStrings(sortedNodes[1].Values["name"], "nodeG", t)
 	expectEqualStrings(sortedNodes[2].Values["name"], "nodeD", t)

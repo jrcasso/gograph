@@ -22,6 +22,7 @@ type Node struct {
 type DirectedGraph struct {
 	DirectedNodes    []*DirectedNode
 	RootDirectedNode *DirectedNode
+	NodeMap          map[string]*DirectedNode
 }
 
 // DirectedNode has a single parent node edges and a single child node edges
@@ -48,7 +49,11 @@ type DirectedNode struct {
 func CreateGraph() DirectedGraph {
 	var node *DirectedNode
 	var graphDirectedNodes []*DirectedNode
-	return DirectedGraph{DirectedNodes: graphDirectedNodes, RootDirectedNode: node}
+	return DirectedGraph{
+		DirectedNodes:    graphDirectedNodes,
+		RootDirectedNode: node,
+		NodeMap:          make(map[string]*DirectedNode),
+	}
 }
 
 // CreateDirectedEdge creates a parent-child relationship between two specified nodes.
@@ -60,6 +65,10 @@ func CreateDirectedEdge(graph DirectedGraph, parent *DirectedNode, child *Direct
 
 // CreateDirectedNode returns a node with a random ID. Does not create edges.
 func CreateDirectedNode(graph DirectedGraph, values map[string]string, parents []*DirectedNode, children []*DirectedNode) (DirectedGraph, *DirectedNode) {
+	if graph.NodeMap == nil {
+		graph.NodeMap = make(map[string]*DirectedNode)
+	}
+
 	var nodeID = CreateDirectedNodeID()
 	var node = &DirectedNode{
 		Parents:  parents,
@@ -100,6 +109,7 @@ func CreateDirectedNode(graph DirectedGraph, values map[string]string, parents [
 		graph.RootDirectedNode = node
 	}
 
+	graph.NodeMap[node.ID] = node
 	return graph, node
 }
 
@@ -113,7 +123,6 @@ func CreateDirectedNodeID() string {
 }
 
 // DeleteDirectedEdge is an in-place function that deletes the edge connection between a child and parent node
-// TODO: Something about the in-placeness, which is in contrast to the CreateDirectedEdge function.
 func DeleteDirectedEdge(graph DirectedGraph, parent *DirectedNode, child *DirectedNode) (DirectedGraph, *DirectedNode, *DirectedNode) {
 	for index, childNode := range parent.Children {
 		if childNode.ID == child.ID {
@@ -141,8 +150,20 @@ func FindNode(graph Graph, ID string) int {
 	return -1
 }
 
-// FindDirectedNode traverses the array of nodes in the graph and returns the index of the node with the specified ID
+// FindDirectedNode finds a node by ID with O(1) complexity using the NodeMap
 func FindDirectedNode(graph DirectedGraph, ID string) (int, DirectedNode) {
+	// First check the map for O(1) lookup if it exists
+	if graph.NodeMap != nil {
+		if node, ok := graph.NodeMap[ID]; ok {
+			for index, n := range graph.DirectedNodes {
+				if n.ID == ID {
+					return index, *node
+				}
+			}
+		}
+	}
+	
+	// Fallback to linear search
 	for index, node := range graph.DirectedNodes {
 		if node.ID == ID {
 			return index, *node
@@ -171,7 +192,8 @@ func FindNodesByValues(graph DirectedGraph, values map[string]string) []*Directe
 }
 
 // TopologicalSort implements Kahn's algorithm to sort a directed acyclic graph
-func TopologicalSort(graph DirectedGraph) []*DirectedNode {
+// Returns an error if the graph contains a cycle
+func TopologicalSort(graph DirectedGraph) ([]*DirectedNode, error) {
 	var sorted []*DirectedNode
 	var childlessNodes []*DirectedNode
 	for _, node := range graph.DirectedNodes {
@@ -205,10 +227,10 @@ func TopologicalSort(graph DirectedGraph) []*DirectedNode {
 	}
 
 	if len(sorted) != len(graph.DirectedNodes) {
-		panic("Provided graph is not a directed, acyclic graph, and does not have a valid topological ordering")
+		return nil, fmt.Errorf("provided graph is not a directed, acyclic graph, and does not have a valid topological ordering")
 	}
 
-	return sorted
+	return sorted, nil
 }
 
 // CreateAdjecencyMatrix initial implementation, whether a directed edge exists from
@@ -269,7 +291,7 @@ func PrintMatrix(matrix [][]int) {
 	}
 }
 
-// IsAntisymmetricMatrix checks that
+// IsAntisymmetricMatrix checks that a matrix is antisymmetric, meaning that for all i,j: matrix[i][j] = -matrix[j][i]
 func IsAntisymmetricMatrix(matrix [][]int) bool {
 	var jsize = len(matrix)
 	for j := 0; j < jsize; j++ {
